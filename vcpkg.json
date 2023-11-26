@@ -1,0 +1,15 @@
+{
+  "name" : "tensor",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "962e5e39f8a25f42522f51fffc574e05a3efd26b",
+  "dependencies" : [ {
+    "name" : "catch2",
+    "version>=" : "3.4.0"
+  }, {
+    "name" : "boost-mp11",
+    "version>=" : "1.82.0#2"
+  }, {
+    "name" : "boost-log",
+    "version>=" : "1.82.0#2"
+  } ]
+}

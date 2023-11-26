@@ -1,0 +1,3 @@
+SET(SOURCES
+        foo.cpp
+)
