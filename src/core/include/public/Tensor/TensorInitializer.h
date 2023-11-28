@@ -10,76 +10,78 @@
 #include "Shape.h"
 #include "TensorDType.h"
 
-namespace TensorTech::Core{
+namespace TensorII::Core{
 
     template<TensorDType DType, typename Shape_>
     struct TensorInitializer;
 
     //region TensorInitializer Definitions
     // 0 dimensions
-    template<TensorDType DType, typename Shape_> requires (Shape_::ndim == 0)
-    struct TensorInitializer<DType, Shape_> {
-        using Value = DType;
-        using Initializer = DType;
-        Value value;
-
-        TensorInitializer(Value value) // NOLINT(google-explicit-constructor)
+    template<TensorDType DType>
+    struct TensorInitializer<DType, Shape<>> {
+        DType value;
+        TensorInitializer(DType value) // NOLINT(google-explicit-constructor)
         : value(value) {};
     };
 
 
-
     // 1 dimension
-    template<TensorDType DType, typename Shape_> requires (Shape_::ndim == 1)
-    struct TensorInitializer<DType, Shape_> {
-        using ElemType = DType;
-        using Values = std::span<const ElemType, Shape_::first_dim>;
-        using Array = ElemType const [Shape_::first_dim];
-        using Initializer = Array&;
-        Values values;
+    template<TensorDType DType, tensorDimension dimension>
+    struct TensorInitializer<DType, Shape<dimension>> {
+        using Array = DType const [dimension];
+        Array& values;
 
-        TensorInitializer(Values values) // NOLINT(google-explicit-constructor)
-        : values(values) {}
-
-        TensorInitializer(Initializer list) // NOLINT(google-explicit-constructor)
-        : TensorInitializer(Values(list)) {}
+        explicit TensorInitializer(Array& array) : values(array) {}
     };
 
     // >1 dimension
-    template<TensorDType DType, typename Shape_> requires (Shape_::ndim > 1)
-    struct TensorInitializer<DType, Shape_> {
-        using ShapeRemaining = typename Shape_::ShapeRemaining;
-        using Values = std::span<const DType, Shape_::size>;
-        using Array = TensorInitializer<DType, ShapeRemaining>::Array const [Shape_::first_dim];
-        using Initializer = Array&;
-        Values values;
+    template<TensorDType DType, tensorDimension dimension, tensorDimension ... rest>
+    struct TensorInitializer<DType, Shape<dimension, rest...>> {
+    private :
+        using LowerArray = typename TensorInitializer<DType, Shape<rest...>>::Array;
+    public:
+        using Array = LowerArray const [dimension];
+        Array& values;
 
-        TensorInitializer(Values values) // NOLINT(google-explicit-constructor)
+        TensorInitializer(Array& values) // NOLINT(google-explicit-constructor)
         : values(values) {};
-
-        TensorInitializer(Initializer initializer) // NOLINT(google-explicit-constructor)
-        : TensorInitializer(Values((int*)initializer, Shape_::size * sizeof(DType))) {}
     };
 
+namespace Private {
+    template <tensorDimension, typename>
+    struct AppendDimension;
+
+    template <tensorDimension dimension, tensorDimension ... rest>
+    struct AppendDimension<dimension, Shape<rest ...>> {
+        using Shape = Shape<dimension, rest ...>;
+    };
+
+    template <typename Array>
+    struct ArrayShape;
+
+    template <TensorDType DType_>
+    struct ArrayShape<DType_> {
+        using DType = DType_;
+        using Shape = Shape<>;
+    };
+
+    template <typename T, tensorDimension N>
+    struct ArrayShape<T[N]> {
+        using DType = T::DType;
+        using Shape = AppendDimension<N, typename T::Shape>::Shape;
+    };
+
+
+}
     //endregion TensorInitializer Definitions
 
-    //region Template Deduction Guides
-    // 0 Dimensions
-//    template<TensorDType DType>
-//    TensorInitializer(DType value)
-//    -> TensorInitializer<DType, Shape<>>;
+    template<TensorDType DType, tensorDimension dimension>
+    TensorInitializer(DType(&) [dimension])
+    -> TensorInitializer<DType, Shape<dimension>>;
 
-    // 1 Dimension
-//    template<TensorDType DType, tensorShapeDim dimension>
-//    TensorInitializer(DType const (&)[dimension])
-//    -> TensorInitializer<DType, Shape<dimension>>;
-
-    // >1 Dimension
-//    template<TensorDType DType, tensorShapeDim first, tensorShapeDim... rest>
-//    TensorInitializer(std::span<TensorInitializer<DType, Shape <rest...>>, first> span)
-//    -> TensorInitializer<DType, Shape<span.size(), rest...>>;
-
-    //endregion Template Deduction Guides
+    template<TensorDType DType>
+    TensorInitializer(DType array[])
+    -> TensorInitializer<DType, Shape<sizeof(decltype(array)) / sizeof(DType)>>;
 }
 
 #endif //TENSOR_TENSORINITIALIZER_H
