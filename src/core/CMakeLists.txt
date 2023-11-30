@@ -18,5 +18,11 @@ target_include_directories(CoreLib
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/public>
         $<INSTALL_INTERFACE:include/public>
+        INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/interface>
+        $<INSTALL_INTERFACE:include/interface>
+        PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/private>
+        $<INSTALL_INTERFACE:include/private>
 #        ${Boost_INCLUDE_DIRS}
         )

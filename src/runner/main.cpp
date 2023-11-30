@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Tensor/Shape.h"
+#include <cassert>
 #include "Tensor/TensorInitializer.h"
 #include "Tensor/Tensor.h"
 
@@ -11,6 +11,7 @@ int main() {
     Tensor u0 = Tensor<int, Shape<>> (1);
     Tensor t0 = toTensor<int>(1);
     static_assert(std::is_same_v<decltype(u0), decltype(t0)>);
+    assert(*t0.data() == 1);
 
     Tensor u1 = Tensor<int, Shape<3>> ({1, 2, 3});
     Tensor t1 = toTensor<int>({1, 2, 3});
