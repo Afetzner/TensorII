@@ -6,18 +6,17 @@
 
 #include <concepts>
 #include <type_traits>
-#include <span>
 #include "Shape.h"
 #include "TensorDType.h"
 
 namespace TensorII::Core{
 
-    template<TensorDType DType, typename Shape_>
+    template<Scalar DType, typename Shape_>
     struct TensorInitializer;
 
     //region TensorInitializer Definitions
     // 0 dimensions
-    template<TensorDType DType>
+    template<Scalar DType>
     struct TensorInitializer<DType, Shape<>> {
         DType value;
         TensorInitializer(DType value) // NOLINT(google-explicit-constructor)
@@ -26,7 +25,7 @@ namespace TensorII::Core{
 
 
     // 1 dimension
-    template<TensorDType DType, tensorDimension dimension>
+    template<Scalar DType, tensorDimension dimension>
     struct TensorInitializer<DType, Shape<dimension>> {
         using Array = DType const [dimension];
         Array& values;
@@ -35,7 +34,7 @@ namespace TensorII::Core{
     };
 
     // >1 dimension
-    template<TensorDType DType, tensorDimension dimension, tensorDimension ... rest>
+    template<Scalar DType, tensorDimension dimension, tensorDimension ... rest>
     struct TensorInitializer<DType, Shape<dimension, rest...>> {
     private :
         using LowerArray = typename TensorInitializer<DType, Shape<rest...>>::Array;
@@ -59,7 +58,7 @@ namespace Private {
     template <typename Array>
     struct ArrayShape;
 
-    template <TensorDType DType_>
+    template <Scalar DType_>
     struct ArrayShape<DType_> {
         using DType = DType_;
         using Shape = Shape<>;
@@ -75,11 +74,11 @@ namespace Private {
 }
     //endregion TensorInitializer Definitions
 
-    template<TensorDType DType, tensorDimension dimension>
+    template<Scalar DType, tensorDimension dimension>
     TensorInitializer(DType(&) [dimension])
     -> TensorInitializer<DType, Shape<dimension>>;
 
-    template<TensorDType DType>
+    template<Scalar DType>
     TensorInitializer(DType array[])
     -> TensorInitializer<DType, Shape<sizeof(decltype(array)) / sizeof(DType)>>;
 }

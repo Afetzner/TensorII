@@ -3,7 +3,7 @@
 //
 
 #include "Catch2/catch_test_macros.hpp"
-#include "Tensor/Tensor.h"
+#include "TensorII/Tensor.h"
 
 using namespace TensorII::Core;
 

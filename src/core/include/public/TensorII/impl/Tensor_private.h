@@ -6,25 +6,27 @@
 
 #include <concepts>
 #include <memory>
-#include <array>
-#include "Tensor/Shape.h"
-#include "Tensor/TensorDType.h"
-#include "Tensor/TensorInitializer.h"
+#include "TensorII/Shape.h"
+#include "TensorII/TensorDType.h"
+#include "TensorII/TensorInitializer.h"
 
 namespace TensorII::Core {
 
-    template <TensorDType DType, typename Shape_, class Allocator = std::allocator<DType>>
+    template <Scalar DType, typename Shape_, class Allocator = std::allocator<DType>>
     class Tensor{
     public:
         using Shape = Shape_;
 
-        explicit Tensor(TensorInitializer<DType, Shape>::Array& array);
-        explicit Tensor(TensorInitializer<DType, Shape>&& initializer);
-        Tensor(const Tensor&) = delete;
-        Tensor(Tensor&&) = delete;
-
         static constexpr tensorSize size() noexcept { return Shape::size; };
         static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
+
+        explicit Tensor(TensorInitializer<DType, Shape>::Array& array);
+        explicit Tensor(TensorInitializer<DType, Shape>&& initializer);
+
+        template<typename NewShape, class NewAllocator = Allocator>
+        operator Tensor<NewShape, NewAllocator>();
+        Tensor(Tensor&&) = delete;
+
         constexpr DType* data() noexcept;
         constexpr const DType* data() const noexcept;
 
@@ -33,7 +35,7 @@ namespace TensorII::Core {
     };
 
     // 0D tensor
-    template <TensorDType DType, class Allocator>
+    template <Scalar DType, class Allocator>
     class Tensor<DType, Shape<>, Allocator> {
     public:
         using Shape = Shape<>;
@@ -54,7 +56,7 @@ namespace TensorII::Core {
 
     //region toTensor
     // 0 dimensions
-    template<TensorDType DType,
+    template<Scalar DType,
             class Allocator = std::allocator<DType>>
     Tensor<DType, Shape<>, Allocator>
     toTensor(DType value)
@@ -63,7 +65,7 @@ namespace TensorII::Core {
     }
 
     // 1 dimension
-    template<TensorDType DType,
+    template<Scalar DType,
             tensorDimension dimension,
             class Allocator = std::allocator<DType>>
     Tensor<DType, Shape<dimension>, Allocator>
@@ -73,7 +75,7 @@ namespace TensorII::Core {
     }
 
     // 2 dimensions
-    template<TensorDType DType,
+    template<Scalar DType,
             tensorDimension d1,
             tensorDimension d2,
             class Allocator = std::allocator<DType>>
@@ -85,7 +87,7 @@ namespace TensorII::Core {
     }
 
     // 3 dimensions
-    template<TensorDType DType,
+    template<Scalar DType,
             tensorDimension d1,
             tensorDimension d2,
             tensorDimension d3,
@@ -98,7 +100,7 @@ namespace TensorII::Core {
     }
 
     // 4 dimensions
-    template<TensorDType DType,
+    template<Scalar DType,
             tensorDimension d1,
             tensorDimension d2,
             tensorDimension d3,

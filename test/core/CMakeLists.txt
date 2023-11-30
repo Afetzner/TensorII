@@ -1,6 +1,6 @@
 # test/core/CMakeLists.txt
 
-set(SOURCES Tensor_test.cpp)
+include(tests.cmake)
 target_sources(Tests PUBLIC ${SOURCES})
 
 add_subdirectory(ispc)

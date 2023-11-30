@@ -9,14 +9,14 @@
 
 namespace TensorII::Core {
     template<typename T>
-    concept TensorDType
+    concept Scalar
             = std::integral<T>
             || std::floating_point<T>;
 
     template<typename Arr>
-    concept TensorDTypeArray
+    concept ScalarArray
             = std::is_bounded_array_v<Arr>
-            && TensorDType<typename std::remove_all_extents_t<Arr>>;
+              && Scalar<typename std::remove_all_extents_t<Arr>>;
 
 }
 

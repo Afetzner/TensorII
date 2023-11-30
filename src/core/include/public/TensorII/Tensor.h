@@ -6,6 +6,6 @@
 #define TENSOR_TENSOR_H
 
 #include "impl/Tensor_private.h"
-#include "impl/Tensor.cpp"
+#include "impl/Tensor.cpp" // NOLINT(bugprone-suspicious-include)
 
 #endif //TENSOR_TENSOR_H
