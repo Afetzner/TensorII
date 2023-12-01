@@ -77,5 +77,10 @@ TEST_CASE("Tensor ToTensor", "[Tensor][Init]"){
     Tensor u5 = Tensor<int, Shape<1, 1, 1, 5>> ({{{{1, 2, 3, 4, 5}}}});
     Tensor t5 = toTensor<int> ({{{{1, 2, 3, 4, 5}}}});
     STATIC_CHECK(std::is_same_v<decltype(u5), decltype(t5)>);
+}
 
+TEST_CASE("Tensor Reshape", "[Tensor]") {
+    using namespace TensorII::Core;
+    Tensor<int, Shape<2, 3>> t23 ({{1, 2, 3}, {4, 5, 6}});
+//    auto t32 = reshape<Shape<3, 2>>(t23);
 }

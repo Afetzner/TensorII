@@ -30,7 +30,7 @@ namespace TensorII::Util {
     //endregion  count_if
 
     template <typename T, T t>
-    struct is_equal {
+    struct is_equal_to {
         template<T Arg>
         using eval = std::integral_constant<bool, (Arg == t)>;
     };
@@ -56,7 +56,41 @@ namespace TensorII::Util {
     template<typename T, T ... Args>
     inline constexpr bool all_positive_v = all_positive<T, Args...>::value::value;
 
+    //region prepend
+    template<typename T, T head, typename List>
+    struct prepend;
 
-    static_assert(count_if<is_positive<int>, int, 1, 2, -1, 3, -2>::count::value == 3);
+    template<typename T, T head, template<T ...> typename List>
+    struct prepend<T, head, List<>>{
+        using Type = List<head>;
+    };
+
+    template<typename T, T head, template<T ...> typename List, T... tail>
+    struct prepend<T, head, List<tail...>>{
+        using Type = List<head, tail...>;
+    };
+    //endregion prepend
+
+
+    //region find and replace
+    template<typename T, T Find, T Replace, typename List>
+    struct replace;
+
+    template<typename T, T Find, T Replace, template <T ...> typename List, T Arg, T ... Args>
+    struct replace<T, Find, Replace, List<Arg, Args ...>> {
+    private:
+        static constexpr T replaced = Arg == Find ? Replace : Arg;
+        using LowerList = replace<T, Find, Replace, List<Args ...>>::Type;
+    public:
+        using Type = prepend<T, replaced, LowerList>::Type;
+    };
+
+
+    template<typename T, T Find, T Replace, template <T ...> typename List>
+    struct replace<T, Find, Replace, List<>> {
+        using Type = List<>;
+    };
+    //endregion find and replace
+
 }
 #endif //TENSOR_TEMPLATE_UTIL_H
