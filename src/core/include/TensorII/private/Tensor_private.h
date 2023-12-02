@@ -10,6 +10,7 @@
 #include "TensorII/Shape.h"
 #include "TensorII/TensorDType.h"
 #include "TensorII/TensorInitializer.h"
+#include "TensorII/TensorIndex.h"
 
 namespace TensorII::Core {
 
@@ -24,11 +25,21 @@ namespace TensorII::Core {
         static constexpr tensorSize size() noexcept { return Shape::size; };
         static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
 
-        explicit Tensor(TensorInitializer<DType, Shape>::Array& array);
-        explicit Tensor(TensorInitializer<DType, Shape>&& initializer);
+        explicit Tensor(TensorInitializer<DType, Shape>::Array&);
+        explicit Tensor(TensorInitializer<DType, Shape>&&);
 
         constexpr DType* data() noexcept;
         constexpr const DType* data() const noexcept;
+
+        template<tensorRank rank>
+        const DType* operator[](const tensorIndex(&)[rank]) const;
+        template<tensorRank rank>
+        DType* operator[](const tensorIndex(&)[rank]);
+
+        template<tensorRank rank>
+        const DType* operator[](const TensorIndexer<rank>&) const;
+        template<tensorRank rank>
+        DType* operator[](const TensorIndexer<rank>&);
 
     private:
         using Array = std::array<DType, size()>;
@@ -68,65 +79,6 @@ namespace TensorII::Core {
     private:
         DType data_;
     };
-
-    //region toTensor
-    // 0 dimensions
-    template<Scalar DType, typename Allocator = TensorDefaultAllocator<DType>>
-    Tensor<DType, Shape<>, Allocator>
-    toTensor(DType value)
-    {
-        return Tensor<DType, Shape<>>(TensorInitializer<DType, Shape<>>(value));
-    }
-
-    // 1 dimension
-    template<Scalar DType,
-            tensorDimension dimension,
-            typename Allocator = TensorDefaultAllocator<DType>>
-    Tensor<DType, Shape<dimension>, Allocator>
-    toTensor(DType (&&array)[dimension])
-    {
-        return Tensor<DType, Shape<dimension>>(TensorInitializer<DType, Shape<dimension>>(array));
-    }
-
-    // 2 dimensions
-    template<Scalar DType,
-            tensorDimension d1,
-            tensorDimension d2,
-            typename Allocator = TensorDefaultAllocator<DType>>
-    Tensor<DType, Shape<d1, d2>, Allocator>
-    toTensor( DType (&&array)[d1][d2])
-    {
-        using Shape = Shape<d1, d2>;
-        return Tensor<DType, Shape> (TensorInitializer<DType, Shape>(array));
-    }
-
-    // 3 dimensions
-    template<Scalar DType,
-            tensorDimension d1,
-            tensorDimension d2,
-            tensorDimension d3,
-            typename Allocator = TensorDefaultAllocator<DType>>
-    Tensor<DType, Shape<d1, d2, d3>, Allocator>
-    toTensor( DType (&&array)[d1][d2][d3])
-    {
-        using Shape = Shape<d1, d2, d3>;
-        return Tensor<DType, Shape> (TensorInitializer<DType, Shape>(array));
-    }
-
-    // 4 dimensions
-    template<Scalar DType,
-            tensorDimension d1,
-            tensorDimension d2,
-            tensorDimension d3,
-            tensorDimension d4,
-            typename Allocator = TensorDefaultAllocator<DType>>
-    Tensor<DType, Shape<d1, d2, d3, d4>, Allocator>
-    toTensor( DType (&&array)[d1][d2][d3][d4])
-    {
-        using Shape = Shape<d1, d2, d3, d4>;
-        return Tensor<DType, Shape> (TensorInitializer<DType, Shape>(array));
-    }
-    //endregion toTensor
 
 } // TensorII::Core
 
