@@ -6,6 +6,7 @@
 #define TENSOR_TENSORDTYPE_H
 
 #include <type_traits>
+#include <concepts>
 
 namespace TensorII::Core {
     template<typename T>

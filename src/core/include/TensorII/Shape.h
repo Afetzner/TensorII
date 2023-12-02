@@ -6,9 +6,10 @@
 #define TENSOR_SHAPE_H
 
 #include <type_traits>
-#include "TensorII/impl/template_util.h"
+#include "TensorII/private/template_util.h"
 
 namespace TensorII::Core {
+    using namespace Private;
 
     using tensorDimension = long long;
     using tensorRank = size_t;

@@ -5,7 +5,7 @@
 #ifndef TENSOR_TENSOR_H
 #define TENSOR_TENSOR_H
 
-#include "impl/Tensor_private.h"
-#include "impl/Tensor.cpp" // NOLINT(bugprone-suspicious-include)
+#include "TensorII/private/Tensor_private.h"
+#include "TensorII/private/Tensor.cpp" // NOLINT(bugprone-suspicious-include)
 
 #endif //TENSOR_TENSOR_H

@@ -7,7 +7,7 @@
 
 #include "type_traits"
 
-namespace TensorII::Util {
+namespace TensorII::Private::Util {
 
     //region count_if
     template<typename Condition, typename T, T ... Args>

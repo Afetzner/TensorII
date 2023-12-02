@@ -46,32 +46,30 @@ namespace TensorII::Core{
         : values(values) {};
     };
 
-namespace Private {
-    template <tensorDimension, typename>
-    struct AppendDimension;
-
-    template <tensorDimension dimension, tensorDimension ... rest>
-    struct AppendDimension<dimension, Shape<rest ...>> {
-        using Shape = Shape<dimension, rest ...>;
-    };
-
-    template <typename Array>
-    struct ArrayShape;
-
-    template <Scalar DType_>
-    struct ArrayShape<DType_> {
-        using DType = DType_;
-        using Shape = Shape<>;
-    };
-
-    template <typename T, tensorDimension N>
-    struct ArrayShape<T[N]> {
-        using DType = T::DType;
-        using Shape = AppendDimension<N, typename T::Shape>::Shape;
-    };
-
-
-}
+//namespace Private {
+//    template <tensorDimension, typename>
+//    struct AppendDimension;
+//
+//    template <tensorDimension dimension, tensorDimension ... rest>
+//    struct AppendDimension<dimension, Shape<rest ...>> {
+//        using Shape = Shape<dimension, rest ...>;
+//    };
+//
+//    template <typename Array>
+//    struct ArrayShape;
+//
+//    template <Scalar DType_>
+//    struct ArrayShape<DType_> {
+//        using DType = DType_;
+//        using Shape = Shape<>;
+//    };
+//
+//    template <typename T, tensorDimension N>
+//    struct ArrayShape<T[N]> {
+//        using DType = T::DType;
+//        using Shape = AppendDimension<N, typename T::Shape>::Shape;
+//    };
+//}
     //endregion TensorInitializer Definitions
 
     template<Scalar DType, tensorDimension dimension>
