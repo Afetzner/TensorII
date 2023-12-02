@@ -1,2 +1,2 @@
-add_executable(TensorExe main.cpp)
-target_link_libraries(TensorExe PRIVATE CoreLib)
+add_executable(TensorII main.cpp)
+target_link_libraries(TensorII PRIVATE CoreLib)

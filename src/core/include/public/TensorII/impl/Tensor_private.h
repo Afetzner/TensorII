@@ -16,11 +16,6 @@ namespace TensorII::Core {
     template <Scalar DType>
     using TensorDefaultAllocator = std::allocator<DType>;
 
-    template <Scalar DType, tensorSize size>
-    struct TensorArrayDeleter {
-        void operator()(std::array<DType, size>* a) { a->~array<DType, size>(); }
-    };
-
     template <Scalar DType, typename Shape_, typename Allocator = TensorDefaultAllocator<DType>>
     class Tensor{
     public:
@@ -37,7 +32,10 @@ namespace TensorII::Core {
 
     private:
         using Array = std::array<DType, size()>;
-        std::unique_ptr<Array, TensorArrayDeleter<DType, size()>> data_;
+        struct ArrayDeleter {
+            void operator()(std::array<DType, size()>* a);
+        };
+        std::unique_ptr<Array, ArrayDeleter> data_;
     };
 
     template <Scalar DType, ExplicitShape OldShape, ExplicitShape NewShape>

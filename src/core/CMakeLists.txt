@@ -26,3 +26,7 @@ target_include_directories(CoreLib
         $<INSTALL_INTERFACE:include/private>
 #        ${Boost_INCLUDE_DIRS}
         )
+
+if(NO_FRAME_POINTER_OPTIMIZATION)
+    target_link_options(CoreLib PUBLIC /Oy-)
+endif ()

@@ -6,6 +6,12 @@
 
 using namespace TensorII::Core;
 
+template<Scalar DType, typename Shape_, typename Allocator>
+void Tensor<DType, Shape_, Allocator>::ArrayDeleter::operator()(std::array<DType, size()> *a) {
+    Allocator allocator;
+    allocator.deallocate((DType *)a, size());
+}
+
 //region constructors
 template<Scalar DType, typename Shape_, typename Allocator>
 Tensor<DType, Shape_, Allocator>::Tensor(TensorInitializer<DType, Shape_>::Array& array) {
@@ -13,7 +19,7 @@ Tensor<DType, Shape_, Allocator>::Tensor(TensorInitializer<DType, Shape_>::Array
             "Mismatch of sizeof(DType[N]) and std::array<DType, N>, cursed compiler?");
     Allocator allocator;
     Array* array_p = new(allocator.allocate(size())) Array;
-    data_ = std::unique_ptr<Array, TensorArrayDeleter<DType, size()>>(array_p);
+    data_ = std::unique_ptr<Array, ArrayDeleter>(array_p);
     memcpy_s(data_.get(), size_in_bytes(), array, size_in_bytes());
 }
 
@@ -27,6 +33,8 @@ constexpr DType* Tensor<DType, Shape_, Allocator>::data() noexcept { return data
 template<Scalar DType, typename Shape_, typename Allocator>
 constexpr const DType* Tensor<DType, Shape_, Allocator>::data() const noexcept { return data_->data(); }
 //endregion constructors
+
+
 
 template <ExplicitShape NewShape, ExplicitShape OldShape, Scalar DType>
     requires (OldShape::size == NewShape::size)
