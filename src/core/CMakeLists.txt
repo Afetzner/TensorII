@@ -1,6 +1,7 @@
 # src/core/CMakeLists.txt
 
 add_library(CoreLib STATIC)
+target_link_libraries(CoreLib PRIVATE all_warning_props) # compile with all warnings
 
 set(Boost_USE_STATIC_LIBS ON)
 #find_package(Boost 1.82 REQUIRED COMPONENTS log)
