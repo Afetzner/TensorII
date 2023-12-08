@@ -1,5 +1,5 @@
 set(SOURCES
-        Shape_test.cpp
+        DynamicShape_test.cpp
         Tensor_test.cpp
         TensorIndex_test.cpp
         )

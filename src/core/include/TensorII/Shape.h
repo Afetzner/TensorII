@@ -34,7 +34,7 @@ namespace TensorII::Core {
 
     template<tensorDimension ... Ns>
     struct IsExplicitShape<Shape<Ns...>>{
-        using value = Util::all_positive<tensorDimension, Ns...>::value;
+        using value = typename Util::all_positive<tensorDimension, Ns...>::value;
     };
 
     template<typename Shape>
@@ -144,7 +144,7 @@ namespace TensorII::Core {
         static constexpr tensorDimension remainder  = explicitShape::size % implicitShape::knownSize;
     public:
         static constexpr bool deducible = remainder == 0;
-        using Shape = Util::replace<tensorDimension, -1, deducedDim, implicitShape>::Type;
+        using Shape = typename Util::replace<tensorDimension, -1, deducedDim, implicitShape>::Type;
     };
 
 }

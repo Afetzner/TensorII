@@ -14,7 +14,7 @@ void Tensor<DType, Shape_, Allocator>::ArrayDeleter::operator()(std::array<DType
 
 //region constructors
 template<Scalar DType, typename Shape_, typename Allocator>
-Tensor<DType, Shape_, Allocator>::Tensor(TensorInitializer<DType, Shape_>::Array& array) {
+Tensor<DType, Shape_, Allocator>::Tensor(typename TensorInitializer<DType, Shape_>::Array& array) {
     static_assert(sizeof(Array) == sizeof(DType) * size(),
             "Mismatch of sizeof(DType[N]) and std::array<DType, N>, cursed compiler?");
     Allocator allocator;

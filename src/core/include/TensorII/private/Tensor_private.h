@@ -25,7 +25,7 @@ namespace TensorII::Core {
         static constexpr tensorSize size() noexcept { return Shape::size; };
         static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
 
-        explicit Tensor(TensorInitializer<DType, Shape>::Array&);
+        explicit Tensor(typename TensorInitializer<DType, Shape>::Array&);
         explicit Tensor(TensorInitializer<DType, Shape>&&);
 
         constexpr DType* data() noexcept;

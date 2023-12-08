@@ -80,9 +80,9 @@ namespace TensorII::Private::Util {
     struct replace<T, Find, Replace, List<Arg, Args ...>> {
     private:
         static constexpr T replaced = Arg == Find ? Replace : Arg;
-        using LowerList = replace<T, Find, Replace, List<Args ...>>::Type;
+        using LowerList = typename replace<T, Find, Replace, List<Args ...>>::Type;
     public:
-        using Type = prepend<T, replaced, LowerList>::Type;
+        using Type = typename prepend<T, replaced, LowerList>::Type;
     };
 
 
