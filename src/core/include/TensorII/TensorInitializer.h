@@ -6,7 +6,7 @@
 
 #include <concepts>
 #include <type_traits>
-#include "Shape.h"
+#include "StaticShape.h"
 #include "TensorDType.h"
 
 namespace TensorII::Core{

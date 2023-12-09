@@ -7,7 +7,7 @@
 #include <concepts>
 #include <memory>
 #include <array>
-#include "TensorII/Shape.h"
+#include "TensorII/StaticShape.h"
 #include "TensorII/TensorDType.h"
 #include "TensorII/TensorInitializer.h"
 #include "TensorII/TensorIndex.h"

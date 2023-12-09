@@ -5,7 +5,7 @@
 #ifndef TENSOR_TENSORINDEXER_H
 #define TENSOR_TENSORINDEXER_H
 
-#include "Shape.h"
+#include "StaticShape.h"
 
 namespace TensorII::Core {
     using tensorIndex = long long;

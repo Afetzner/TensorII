@@ -7,95 +7,106 @@
 
 using namespace TensorII::Core;
 
-TEST_CASE("Explicit Shapes", "[Shape]") {
+TEST_CASE("Explicit Dynamic Shapes", "[Shape]") {
     // Valid, explicit shapes
-    STATIC_CHECK(IsExplicitShape_v<Shape<>>);
-    STATIC_CHECK(IsExplicitShape_v<Shape<5>>);
-    STATIC_CHECK(IsExplicitShape_v<Shape<5, 2>>);
-    STATIC_CHECK(IsExplicitShape_v<Shape<5, 1, 1, 3, 5>>);
+    STATIC_CHECK(Shape{}.isValidExplicit());
+    STATIC_CHECK(Shape{5}.isValidExplicit());
+    STATIC_CHECK(Shape{5, 2}.isValidExplicit());
+    STATIC_CHECK(Shape{5, 1, 1, 2, 3}.isValidExplicit());
 
-    STATIC_CHECK_FALSE(IsExplicitShape_v<Shape<-1>>);
-    STATIC_CHECK_FALSE(IsExplicitShape_v<Shape<-1, 2>>);
-    STATIC_CHECK_FALSE(IsExplicitShape_v<Shape<2, -1>>);
-    STATIC_CHECK_FALSE(IsExplicitShape_v<Shape<23, 4, -1, 5, 7>>);
+    // valid implicit shapes
+    STATIC_CHECK_FALSE(Shape{-1}.isValidExplicit());
+    STATIC_CHECK_FALSE(Shape{-1, 2}.isValidExplicit());
+    STATIC_CHECK_FALSE(Shape{2, -1}.isValidExplicit());
+    STATIC_CHECK_FALSE(Shape{23, 4, 5, -1, 7}.isValidExplicit());
 
-    // Concept
-    STATIC_CHECK(ExplicitShape<Shape<>>);
-    STATIC_CHECK(ExplicitShape<Shape<5>>);
-    STATIC_CHECK(ExplicitShape<Shape<5, 2>>);
-    STATIC_CHECK(ExplicitShape<Shape<5, 1, 1, 3, 5>>);
-
-    STATIC_CHECK_FALSE(ExplicitShape<Shape<-1>>);
-    STATIC_CHECK_FALSE(ExplicitShape<Shape<-1, 2>>);
-    STATIC_CHECK_FALSE(ExplicitShape<Shape<2, -1>>);
-    STATIC_CHECK_FALSE(ExplicitShape<Shape<23, 4, -1, 5, 7>>);
-
+    // Invalid shapes
+    STATIC_CHECK_FALSE(Shape{1, 0, 3}.isValidExplicit());           // invalid, 0
+    STATIC_CHECK_FALSE(Shape{4, -1, 2, -1, 3}.isValidExplicit());   // invalid, two -1s
 }
 
 TEST_CASE("Implicit Shapes", "[Shape]") {
-    // Valid, implicit shapes
-    STATIC_CHECK_FALSE(IsImplicitShape_v<Shape<>>);
-    STATIC_CHECK_FALSE(IsImplicitShape_v<Shape<5>>);
-    STATIC_CHECK_FALSE(IsImplicitShape_v<Shape<5, 2>>);
-    STATIC_CHECK_FALSE(IsImplicitShape_v<Shape<5, 1, 1, 3, 5>>);
+    // Valid, explicit shapes
+    STATIC_CHECK_FALSE(Shape{}.isValidImplicit());
+    STATIC_CHECK_FALSE(Shape{5}.isValidImplicit());
+    STATIC_CHECK_FALSE(Shape{5, 2}.isValidImplicit());
+    STATIC_CHECK_FALSE(Shape{5, 1, 1, 2, 3}.isValidImplicit());
 
-    STATIC_CHECK(IsImplicitShape_v<Shape<-1>>);
-    STATIC_CHECK(IsImplicitShape_v<Shape<-1, 2>>);
-    STATIC_CHECK(IsImplicitShape_v<Shape<2, -1>>);
-    STATIC_CHECK(IsImplicitShape_v<Shape<23, 4, -1, 5, 7>>);
+    // valid implicit shapes
+    STATIC_CHECK(Shape{-1}.isValidImplicit());
+    STATIC_CHECK(Shape{-1, 2}.isValidImplicit());
+    STATIC_CHECK(Shape{2, -1}.isValidImplicit());
+    STATIC_CHECK(Shape{23, 4, 5, -1, 7}.isValidImplicit());
 
-    // Concept
-    STATIC_CHECK_FALSE(ImplicitShape<Shape<>>);
-    STATIC_CHECK_FALSE(ImplicitShape<Shape<5>>);
-    STATIC_CHECK_FALSE(ImplicitShape<Shape<5, 2>>);
-    STATIC_CHECK_FALSE(ImplicitShape<Shape<5, 1, 1, 3, 5>>);
-
-    STATIC_CHECK(ImplicitShape<Shape<-1>>);
-    STATIC_CHECK(ImplicitShape<Shape<-1, 2>>);
-    STATIC_CHECK(ImplicitShape<Shape<2, -1>>);
-    STATIC_CHECK(ImplicitShape<Shape<23, 4, -1, 5, 7>>);
+    // Invalid shapes
+    STATIC_CHECK_FALSE(Shape{1, 0, 3}.isValidImplicit());           // invalid, 0
+    STATIC_CHECK_FALSE(Shape{4, -1, 2, -1, 3}.isValidImplicit());   // invalid, two -1s
 }
 
 TEST_CASE("Invalid Shapes", "[Shape]"){
     // Invalid shapes
-    STATIC_CHECK_FALSE(IsValidShape_v<Shape<0>>);
-    STATIC_CHECK_FALSE(IsValidShape_v<Shape<-1, -1>>);
-    STATIC_CHECK_FALSE(IsValidShape_v<Shape<-1, 2, 3, -1, 4>>);
-    STATIC_CHECK_FALSE(IsValidShape_v<Shape<-1, 0, 1, 23, 4>>);
-    STATIC_CHECK_FALSE(IsValidShape_v<Shape<0, 1, 2>>);
-    STATIC_CHECK_FALSE(IsValidShape_v<Shape<0, 0, 0>>);
+    STATIC_CHECK_FALSE(Shape{0}.isValid());
+    STATIC_CHECK_FALSE(Shape{-1, -1}.isValid());
+    STATIC_CHECK_FALSE(Shape{-1, 2, 3, -1, 4}.isValid());
+    STATIC_CHECK_FALSE(Shape{-1, 0, 1, 23, 4}.isValid());
+    STATIC_CHECK_FALSE(Shape{0, 0, 0}.isValid());
+}
 
-    // Concept
-    STATIC_CHECK_FALSE(ValidShape<Shape<0>>);
-    STATIC_CHECK_FALSE(ValidShape<Shape<-1, -1>>);
-    STATIC_CHECK_FALSE(ValidShape<Shape<-1, 2, 3, -1, 4>>);
-    STATIC_CHECK_FALSE(ValidShape<Shape<-1, 0, 1, 23, 4>>);
-    STATIC_CHECK_FALSE(ValidShape<Shape<0, 1, 2>>);
-    STATIC_CHECK_FALSE(ValidShape<Shape<0, 0, 0>>);
+TEST_CASE("Shape size", "[Shape]"){
+    // Explicit shapes
+    STATIC_CHECK(Shape{}.size() == 1);
+    STATIC_CHECK(Shape{5}.size() == 5);
+    STATIC_CHECK(Shape{5, 2}.size() == 10);
+    STATIC_CHECK(Shape{5, 1, 1, 2, 3}.size() == 30);
+
+    // Implicit shapes
+    STATIC_CHECK(Shape{-1}.size() == 1);
+    STATIC_CHECK(Shape{-1, 2}.size() == 2);
+    STATIC_CHECK(Shape{2, -1}.size() == 2);
+    STATIC_CHECK(Shape{23, 4, 5, -1, 7}.size() == 3220);
 }
 
 TEST_CASE("Shape deduction", "[Shape]"){
     {
-        using Explicit = Shape<10>;
-        using Implicit = Shape<-1>;
-        using Deduced = DeduceShape<Explicit, Implicit>::Shape;
-        STATIC_CHECK(std::is_same_v<Deduced, Shape<10>>);
+        constexpr Shape Explicit = Shape{10};
+        constexpr Shape Implicit = Shape{-1};
+        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+        STATIC_CHECK(Deduced == Shape{10});
     }
     {
-        using Explicit = Shape<2, 3, 5>;
-        using Implicit = Shape<5, -1>;
-        using Deduced = DeduceShape<Explicit, Implicit>::Shape;
-        STATIC_CHECK(std::is_same_v<Deduced, Shape<5, 6>>);
+        constexpr Shape Explicit = Shape{2, 3, 5};
+        constexpr Shape Implicit = Shape{5, -1};
+        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+        STATIC_CHECK(Deduced == Shape{5, 6});
     }
     {
-        using Explicit = Shape<2, 2, 6, 7, 1>;
-        using Implicit = Shape<1, -1, 21>;
-        using Deduced = DeduceShape<Explicit, Implicit>::Shape;
-        STATIC_CHECK(std::is_same_v<Deduced, Shape<1, 8, 21>>);
+        constexpr Shape Explicit = Shape{2, 2, 6, 7, 1};
+        constexpr Shape Implicit = Shape{1, -1, 21};
+        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+        STATIC_CHECK(Deduced == Shape{1, 8, 21});
     }
+
+    // Incompatible shapes
     {
-        using Explicit = Shape<10>;
-        using Implicit = Shape<3, -1>;
-        STATIC_CHECK(!DeduceShape<Explicit, Implicit>::deducible);
+        constexpr Shape Explicit = Shape{10};
+        constexpr Shape Implicit = Shape{3, -1};
+        REQUIRE_THROWS(DeduceShape(Explicit, Implicit));
+    }
+
+    // Using explicit shape as implicit
+    {
+        constexpr Shape Explicit = Shape{10};
+        constexpr Shape Implicit = Shape{10};
+        REQUIRE_THROWS(DeduceShape(Explicit, Implicit));
+        // Need to find a way to verify this fails to compile if constexpr.
+//        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+    }
+    // using implicit shape as explicit
+    {
+        constexpr Shape Explicit = Shape{3, -1};
+        constexpr Shape Implicit = Shape{3, -1};
+        REQUIRE_THROWS(DeduceShape(Explicit, Implicit));
+        // Need to find a way to verify this fails to compile if constexpr.
+//        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
     }
 }
