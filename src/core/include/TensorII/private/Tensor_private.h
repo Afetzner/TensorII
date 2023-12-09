@@ -17,29 +17,22 @@ namespace TensorII::Core {
     template <Scalar DType>
     using TensorDefaultAllocator = std::allocator<DType>;
 
-    template <Scalar DType, typename Shape_, typename Allocator = TensorDefaultAllocator<DType>>
+    template <Scalar DType, auto shape_, typename Allocator = TensorDefaultAllocator<DType>>
     class Tensor{
     public:
-        using Shape = Shape_;
+        consteval Shape<shape_.rank()> shape() { return shape_; };
 
-        static constexpr tensorSize size() noexcept { return Shape::size; };
+        static constexpr tensorSize size() noexcept { return shape_.size(); };
+
         static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
 
-        explicit Tensor(TensorInitializer<DType, Shape>::Array&);
-        explicit Tensor(TensorInitializer<DType, Shape>&&);
+        explicit Tensor(typename Private::TensorInitializer<DType, shape_>::Array&);
+
+        explicit Tensor(Private::TensorInitializer<DType, shape_>&&);
 
         constexpr DType* data() noexcept;
+
         constexpr const DType* data() const noexcept;
-
-        template<tensorRank rank>
-        const DType* operator[](const tensorIndex(&)[rank]) const;
-        template<tensorRank rank>
-        DType* operator[](const tensorIndex(&)[rank]);
-
-        template<tensorRank rank>
-        const DType* operator[](const TensorIndexer<rank>&) const;
-        template<tensorRank rank>
-        DType* operator[](const TensorIndexer<rank>&);
 
     private:
         using Array = std::array<DType, size()>;
@@ -49,29 +42,35 @@ namespace TensorII::Core {
         std::unique_ptr<Array, ArrayDeleter> data_;
     };
 
-    template <Scalar DType, ExplicitShape OldShape, ExplicitShape NewShape>
-            requires (OldShape::size == NewShape::size)
-    Tensor<DType, NewShape>&
-    reshape(Tensor<DType, OldShape>& t);
+    template <Scalar DType, Shape oldShape, Shape newShape>
+            requires (oldShape.size() == newShape.size()
+                      && oldShape.isValidExplicit()
+                      && newShape.isValidExplicit())
+    Tensor<DType, newShape>&
+    reshape(Tensor<DType, oldShape>& t);
 
-    template <Scalar DType, ExplicitShape OldShape, ImplicitShape NewShape>
-            requires(DeduceShape<OldShape, NewShape>::deducible)
-    Tensor<DType, typename DeduceShape<OldShape, NewShape>::Shape>&
-    reshape(Tensor<DType, OldShape>& t);
+    template <Scalar DType, Shape oldShape, Shape newShape>
+    requires (oldShape.size() == newShape.size()
+              && oldShape.isValidExplicit()
+              && newShape.isValidImplicit())
+    Tensor<DType, deduceShape(oldShape, newShape)>&
+    reshape(Tensor<DType, oldShape>& t);
 
 
     // 0D tensor
     template <Scalar DType, typename Allocator>
-    class Tensor<DType, Shape<>, Allocator> {
+    class Tensor<DType, Shape<0>{}, Allocator> {
     public:
-        using Shape = Shape<>;
+        consteval Shape<0> shape() { return Shape{}; };
 
         Tensor(DType value); // NOLINT(google-explicit-constructor)
-        explicit Tensor(TensorInitializer<DType, Shape>&& initializer);
+        explicit Tensor(Private::TensorInitializer<DType, Shape<0>{}>&& initializer);
+
         Tensor(const Tensor&) = delete;
+
         Tensor(Tensor&&) = delete;
 
-        static constexpr tensorSize size() noexcept { return Shape::size; };
+        static constexpr tensorSize size() noexcept { return Shape<0>::size(); };
         static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
         constexpr DType* data() noexcept;
         constexpr const DType* data() const noexcept;
