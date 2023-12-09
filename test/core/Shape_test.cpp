@@ -70,19 +70,19 @@ TEST_CASE("Shape deduction", "[Shape]"){
     {
         constexpr Shape Explicit = Shape{10};
         constexpr Shape Implicit = Shape{-1};
-        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+        constexpr Shape Deduced = deduceShape(Explicit, Implicit);
         STATIC_CHECK(Deduced == Shape{10});
     }
     {
         constexpr Shape Explicit = Shape{2, 3, 5};
         constexpr Shape Implicit = Shape{5, -1};
-        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+        constexpr Shape Deduced = deduceShape(Explicit, Implicit);
         STATIC_CHECK(Deduced == Shape{5, 6});
     }
     {
         constexpr Shape Explicit = Shape{2, 2, 6, 7, 1};
         constexpr Shape Implicit = Shape{1, -1, 21};
-        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
+        constexpr Shape Deduced = deduceShape(Explicit, Implicit);
         STATIC_CHECK(Deduced == Shape{1, 8, 21});
     }
 
@@ -90,14 +90,14 @@ TEST_CASE("Shape deduction", "[Shape]"){
     {
         constexpr Shape Explicit = Shape{10};
         constexpr Shape Implicit = Shape{3, -1};
-        REQUIRE_THROWS(DeduceShape(Explicit, Implicit));
+        REQUIRE_THROWS(deduceShape(Explicit, Implicit));
     }
 
     // Using explicit shape as implicit
     {
         constexpr Shape Explicit = Shape{10};
         constexpr Shape Implicit = Shape{10};
-        REQUIRE_THROWS(DeduceShape(Explicit, Implicit));
+        REQUIRE_THROWS(deduceShape(Explicit, Implicit));
         // Need to find a way to verify this fails to compile if constexpr.
 //        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
     }
@@ -105,7 +105,7 @@ TEST_CASE("Shape deduction", "[Shape]"){
     {
         constexpr Shape Explicit = Shape{3, -1};
         constexpr Shape Implicit = Shape{3, -1};
-        REQUIRE_THROWS(DeduceShape(Explicit, Implicit));
+        REQUIRE_THROWS(deduceShape(Explicit, Implicit));
         // Need to find a way to verify this fails to compile if constexpr.
 //        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
     }

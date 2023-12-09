@@ -6,79 +6,48 @@
 
 #include <concepts>
 #include <type_traits>
-#include "StaticShape.h"
+#include "Shape.h"
 #include "TensorDType.h"
 
-namespace TensorII::Core{
+namespace TensorII::Core::Private {
 
-    template<Scalar DType, typename Shape_>
+    template<Scalar, Shape, tensorRank index = 0>
     struct TensorInitializer;
 
     //region TensorInitializer Definitions
     // 0 dimensions
     template<Scalar DType>
-    struct TensorInitializer<DType, Shape<>> {
+    struct TensorInitializer<DType, Shape<0>{}, 0> {
         DType value;
         TensorInitializer(DType value) // NOLINT(google-explicit-constructor)
         : value(value) {};
     };
 
-
-    // 1 dimension
-    template<Scalar DType, tensorDimension dimension>
-    struct TensorInitializer<DType, Shape<dimension>> {
-        using Array = DType const [dimension];
-        Array& values;
-
-        explicit TensorInitializer(Array& array) : values(array) {}
-    };
-
     // >1 dimension
-    template<Scalar DType, tensorDimension dimension, tensorDimension ... rest>
-    struct TensorInitializer<DType, Shape<dimension, rest...>> {
-    private :
-        using LowerArray = typename TensorInitializer<DType, Shape<rest...>>::Array;
+    template<Scalar DType, Shape shape, tensorRank index>
+    requires (shape.rank() > 0 && index < shape.rank() - 1)
+    struct TensorInitializer<DType, shape, index> {
+    private:
+        using LowerArray = typename TensorInitializer<DType, shape, index + 1>::Array;
     public:
-        using Array = LowerArray const [dimension];
+        using Array = LowerArray const [shape[index]];
         Array& values;
 
         TensorInitializer(Array& values) // NOLINT(google-explicit-constructor)
         : values(values) {};
     };
 
-//namespace Private {
-//    template <tensorDimension, typename>
-//    struct AppendDimension;
-//
-//    template <tensorDimension dimension, tensorDimension ... rest>
-//    struct AppendDimension<dimension, Shape<rest ...>> {
-//        using Shape = Shape<dimension, rest ...>;
-//    };
-//
-//    template <typename Array>
-//    struct ArrayShape;
-//
-//    template <Scalar DType_>
-//    struct ArrayShape<DType_> {
-//        using DType = DType_;
-//        using Shape = Shape<>;
-//    };
-//
-//    template <typename T, tensorDimension N>
-//    struct ArrayShape<T[N]> {
-//        using DType = T::DType;
-//        using Shape = AppendDimension<N, typename T::Shape>::Shape;
-//    };
-//}
+    template<Scalar DType, Shape shape, tensorRank index>
+    requires (shape.rank() > 0 && index == shape.rank() - 1)
+    struct TensorInitializer<DType, shape, index> {
+    public:
+        using Array = DType const [shape[index]];
+        Array& values;
+
+        TensorInitializer(Array& values) // NOLINT(google-explicit-constructor)
+                : values(values) {};
+    };
     //endregion TensorInitializer Definitions
-
-    template<Scalar DType, tensorDimension dimension>
-    TensorInitializer(DType(&) [dimension])
-    -> TensorInitializer<DType, Shape<dimension>>;
-
-    template<Scalar DType>
-    TensorInitializer(DType array[])
-    -> TensorInitializer<DType, Shape<sizeof(decltype(array)) / sizeof(DType)>>;
 }
 
 #endif //TENSOR_TENSORINITIALIZER_H

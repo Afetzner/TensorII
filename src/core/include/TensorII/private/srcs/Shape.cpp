@@ -7,8 +7,11 @@
 namespace TensorII::Core {
 
     template<tensorRank rank_>
-    constexpr Shape<rank_>::Shape(const tensorDimension (&array)[rank]) {
-        std::copy_n(array, rank, dimensions.begin());
+    constexpr Shape<rank_>::Shape() : dimensions {0} {}
+
+    template<tensorRank rank_>
+    constexpr Shape<rank_>::Shape(const tensorDimension (&array)[rank_]){
+        std::copy_n(array, rank_, dimensions.begin());
     }
 
     template<tensorRank rank_>
@@ -22,9 +25,9 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    constexpr Shape<rank_> &Shape<rank_>::operator=(const Shape<rank> &other) {
+    constexpr Shape<rank_> &Shape<rank_>::operator=(const Shape<rank_> &other) {
         if (this != &other) {
-            std::copy_n(other.dimensions.begin(), rank, dimensions.begin());
+            std::copy(other.dimensions.begin(), other.dimensions.end(), dimensions.begin());
         }
         return *this;
     }
@@ -32,8 +35,13 @@ namespace TensorII::Core {
     template<tensorRank rank_>
     template<tensorRank otherRank>
     constexpr bool Shape<rank_>::operator==(const Shape<otherRank> &other) {
-        return (otherRank == rank) && std::equal(dimensions.begin(), dimensions.end(),
+        return (otherRank == rank_) && std::equal(dimensions.begin(), dimensions.end(),
                                                  other.dimensions.begin(), other.dimensions.end());
+    }
+
+    template<tensorRank rank_>
+    inline constexpr tensorDimension Shape<rank_>::operator[](tensorRank i) const {
+        return dimensions[i];
     }
 
     template<tensorRank rank_>
@@ -73,7 +81,7 @@ namespace TensorII::Core {
 
     template<tensorRank explicitRank, tensorRank implicitRank>
     constexpr Shape<implicitRank>
-    DeduceShape(const Shape<explicitRank> &explicitShape, const Shape<implicitRank> &implicitShape) {
+    deduceShape(const Shape<explicitRank> &explicitShape, const Shape<implicitRank> &implicitShape) {
         if (!explicitShape.isValidExplicit()) {
             throw std::runtime_error("Arg 'explicitShape' is not a valid explicit shape");
         }
