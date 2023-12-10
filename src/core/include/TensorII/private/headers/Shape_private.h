@@ -14,16 +14,16 @@
 
 namespace TensorII::Core {
 
-    using tensorDimension = long long;
+    using tensorDimension = long;  // 2^32 = 4G, probably don't need larger
     using tensorRank = size_t;
     using tensorSize = size_t;
 
     template <tensorRank rank_>
     struct Shape {
-
         std::array<tensorDimension, rank_> dimensions;
 
         constexpr Shape();
+        constexpr ~Shape();
 
         constexpr Shape(const tensorDimension (&array)[rank_]); // NOLINT(google-explicit-constructor)
 
@@ -36,12 +36,12 @@ namespace TensorII::Core {
         constexpr Shape<rank_>& operator=(const Shape<rank_>& other);
 
         template <tensorRank otherRank>
-        constexpr bool operator==(const Shape<otherRank>& other);
+        constexpr bool operator==(const Shape<otherRank>& other) const;
 
         constexpr tensorDimension operator[](tensorRank i) const;
 
         [[nodiscard]]
-        constexpr tensorRank rank() const { return rank_; }
+        constexpr tensorRank rank() const;
 
         [[nodiscard]]
         constexpr tensorSize size() const;

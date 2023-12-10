@@ -1,23 +1,22 @@
 //
 // Created by Amy Fetzner on 11/19/2023.
 //
-#ifndef TENSOR_TENSOR_1_H
-#define TENSOR_TENSOR_1_H
+#ifndef TENSOR_TENSOR_PRIVATE_H
+#define TENSOR_TENSOR_PRIVATE_H
 
 #include <concepts>
 #include <memory>
 #include <array>
+
+#include "Tensor_predecl.h"
 #include "TensorII/Shape.h"
 #include "TensorII/TensorDType.h"
 #include "TensorII/TensorInitializer.h"
-#include "TensorII/TensorIndex.h"
+#include "TensorII/private/TensorIndex.h"
 
 namespace TensorII::Core {
 
-    template <Scalar DType>
-    using TensorDefaultAllocator = std::allocator<DType>;
-
-    template <Scalar DType, auto shape_, typename Allocator = TensorDefaultAllocator<DType>>
+    template <Scalar DType, auto shape_, typename Allocator>
     class Tensor{
     public:
         consteval Shape<shape_.rank()> shape() { return shape_; };
@@ -81,4 +80,4 @@ namespace TensorII::Core {
 
 } // TensorII::Core
 
-#endif //TENSOR_TENSOR_1_H
+#endif //TENSOR_TENSOR_H

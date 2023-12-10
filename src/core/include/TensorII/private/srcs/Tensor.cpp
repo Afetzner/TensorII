@@ -2,7 +2,7 @@
 // Created by Amy Fetzner on 11/19/2023.
 //
 
-#include "TensorII/private/Tensor_private.h"
+#include "TensorII/private/headers/Tensor_private.h"
 
 namespace TensorII::Core {
 
@@ -69,6 +69,5 @@ namespace TensorII::Core {
 
     template<Scalar DType, typename Allocator>
     constexpr const DType *Tensor<DType, Shape<0>{}, Allocator>::data() const noexcept { return &data_; }
-
     //endregion 0D specialization
 }

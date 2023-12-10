@@ -5,7 +5,7 @@
 #ifndef TENSOR_TOTENSOR_H
 #define TENSOR_TOTENSOR_H
 
-#include "Tensor_private.h"
+#include "TensorII/private/headers/Tensor_private.h"
 
 namespace TensorII::Core {
     //region toTensor
