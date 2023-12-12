@@ -23,7 +23,9 @@ namespace TensorII::Core {
         std::array<tensorDimension, rank_> dimensions;
 
         constexpr Shape();
-        constexpr ~Shape();
+        constexpr ~Shape() = default;
+        constexpr Shape(const Shape<rank_>& other) = default;
+        constexpr Shape<rank_>& operator=(const Shape<rank_>& other) = default;
 
         constexpr Shape(const tensorDimension (&array)[rank_]); // NOLINT(google-explicit-constructor)
 
@@ -31,9 +33,19 @@ namespace TensorII::Core {
         requires(sizeof...(Dims) == rank_)
         constexpr Shape(const Dims& ... dims); // NOLINT(google-explicit-constructor)
 
-        constexpr Shape(const Shape<rank_>& other);  // NOLINT(google-explicit-constructor)
+        template <std::convertible_to<tensorDimension> ... Dims>
+        constexpr Shape<rank_ + sizeof...(Dims)> augment(const Dims ... dims) const;
 
-        constexpr Shape<rank_>& operator=(const Shape<rank_>& other);
+        template <tensorRank rankDiff>
+        constexpr Shape<rank_ + rankDiff> augment(const tensorDimension (&array)[rankDiff]) const;
+
+        template <tensorRank newRank>
+        requires(newRank < rank_ && newRank != 0)
+        constexpr Shape<newRank> demote() const;
+
+        template <tensorRank newRank>
+        requires(newRank == 0)
+        constexpr Shape<newRank> demote() const;
 
         template <tensorRank otherRank>
         constexpr bool operator==(const Shape<otherRank>& other) const;
@@ -60,6 +72,12 @@ namespace TensorII::Core {
     struct Shape<0> {
 
         constexpr Shape() = default;
+
+        template <std::convertible_to<tensorDimension> ... Dims>
+        constexpr Shape<sizeof...(Dims)> augment(const Dims ... dims) const;
+
+        template <tensorRank rankDiff>
+        constexpr Shape<rankDiff> augment(const tensorDimension (&array)[rankDiff]) const;
 
         template <tensorRank otherRank>
         constexpr bool operator==(const Shape<otherRank>& other) {

@@ -14,20 +14,24 @@ namespace TensorII::Core {
 
     template <tensorRank maxRank>
     class AnyShape{
-        std::aligned_storage_t<sizeof(Shape<maxRank>), alignof(Shape<maxRank>)> data;
+        tensorDimension data[maxRank];
         std::optional<tensorRank> currRank;
 
     public:
         constexpr ~AnyShape();
         constexpr AnyShape();
 
+        template<std::convertible_to<tensorDimension> ... Dims>
+        requires(sizeof...(Dims) <= maxRank)
+        constexpr explicit AnyShape(const Dims ... dims);
+
         template<tensorRank rank>
         requires(rank <= maxRank)
-        constexpr AnyShape& emplace(const tensorDimension (&array)[rank]);
+        AnyShape& emplace(const tensorDimension (&array)[rank]);
 
         template<std::convertible_to<tensorDimension> ... Dims>
-        requires(sizeof...(Dims) < maxRank)
-        constexpr AnyShape& emplace(Dims ... dims);
+        requires(sizeof...(Dims) <= maxRank)
+        AnyShape& emplace(const Dims ... dims);
 
         template<tensorRank newRank>
         requires(newRank <= maxRank)

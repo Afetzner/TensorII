@@ -192,3 +192,18 @@ TEST_CASE("AnyShape emplace array", "[Shape]") {
     CHECK(anyShape == Shape{1, 2, 3});
     CHECK(anyShape != Shape{1, 2, 3, 4});
 }
+
+//TEST_CASE("AnyShape.shape()", "[Shape]"){
+//    AnyShape<5> anyShape;
+//    anyShape.emplace(1, 2, 3);
+//    CHECK_NOTHROW(anyShape.shape<3>());
+//    CHECK_THROWS(anyShape.shape<2>());
+//    CHECK_THROWS(anyShape.shape<4>());
+//}
+//
+//TEST_CASE("AnyShape constant expressions", "[Shape]"){
+//    constexpr AnyShape<5> anyShape (1, 2, 3, 4);
+//    static_assert(anyShape.rank() == 4);
+//    static_assert(anyShape.size() == 24);
+//    static_assert(anyShape == Shape{1, 2, 3, 4});
+//}

@@ -110,3 +110,52 @@ TEST_CASE("Shape deduction", "[Shape]"){
 //        constexpr Shape Deduced = DeduceShape(Explicit, Implicit);
     }
 }
+
+TEST_CASE("Shape augment args", "[Shape]"){
+    {
+        constexpr Shape before = Shape {1, 2, 3};
+        constexpr Shape after = before.augment(4);
+        static_assert(after == Shape{1, 2, 3, 4});
+    }
+    {
+        constexpr Shape before = Shape {1, 2, 3};
+        constexpr Shape after = before.augment(4, 5, 6, 7);
+        static_assert(after == Shape{1, 2, 3, 4, 5, 6, 7});
+    }
+    {
+        constexpr Shape before = Shape {};
+        constexpr Shape after = before.augment(1, 2, 3);
+        static_assert(after == Shape{1, 2, 3});
+    }
+}
+
+TEST_CASE("Shape augment array", "[Shape]"){
+    {
+        constexpr Shape before = Shape {1, 2, 3};
+        constexpr Shape after = before.augment({4});
+        static_assert(after == Shape{1, 2, 3, 4});
+    }
+    {
+        constexpr Shape before = Shape {1, 2, 3};
+        constexpr Shape after = before.augment({4, 5, 6, 7});
+        static_assert(after == Shape{1, 2, 3, 4, 5, 6, 7});
+    }
+    {
+        constexpr Shape before = Shape {};
+        constexpr Shape after = before.augment({1, 2, 3});
+        static_assert(after == Shape{1, 2, 3});
+    }
+}
+
+TEST_CASE("Shape demote", "[Shape]"){
+    {
+        constexpr Shape before = Shape {1, 2, 3};
+        constexpr Shape after = before.demote<2>();
+        static_assert(after == Shape{1, 2});
+    }
+    {
+        constexpr Shape before = Shape {1, 2, 3};
+        constexpr Shape after = before.demote<0>();
+        static_assert(after == Shape{});
+    }
+}

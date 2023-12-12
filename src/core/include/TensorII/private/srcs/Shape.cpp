@@ -3,14 +3,12 @@
 //
 
 #include "TensorII/private/headers/Shape_private.h"
+#include <ranges>
 
 namespace TensorII::Core {
 
     template<tensorRank rank_>
     constexpr Shape<rank_>::Shape() : dimensions {0} {}
-
-    template<tensorRank rank_>
-    constexpr Shape<rank_>::~Shape() = default;
 
     template<tensorRank rank_>
     constexpr Shape<rank_>::Shape(const tensorDimension (&array)[rank_]){
@@ -23,16 +21,44 @@ namespace TensorII::Core {
     constexpr Shape<rank_>::Shape(const Dims &... dims) : dimensions{dims...} {}
 
     template<tensorRank rank_>
-    constexpr Shape<rank_>::Shape(const Shape<rank_> &other) {
-        std::copy(other.dimensions.begin(), other.dimensions.end(), dimensions.begin());
+    template<std::convertible_to<tensorDimension>... Dims>
+    constexpr Shape<rank_ + sizeof...(Dims)> Shape<rank_>::augment(const Dims... dims) const {
+        Shape<rank_ + sizeof...(Dims)> newShape{};
+        std::ranges::copy(dimensions.begin(), dimensions.end(),
+                          newShape.dimensions.begin());
+        tensorDimension* where = &newShape.dimensions[rank_];
+        ([&where](tensorDimension dim){
+            *where = dim;
+            where = &where[1];
+        }(dims), ...);
+        return newShape;
     }
 
     template<tensorRank rank_>
-    constexpr Shape<rank_> &Shape<rank_>::operator=(const Shape<rank_> &other) {
-        if (this != &other) {
-            std::copy(other.dimensions.begin(), other.dimensions.end(), dimensions.begin());
-        }
-        return *this;
+    template<tensorRank rankDiff>
+    constexpr Shape<rank_ + rankDiff> Shape<rank_>::augment(const tensorDimension (&array)[rankDiff]) const {
+        Shape<rank_ + rankDiff> newShape{};
+        std::ranges::copy(dimensions.begin(), dimensions.end(),
+                          newShape.dimensions.begin());
+        std::ranges::copy(array, newShape.dimensions.begin() + rank_);
+        return newShape;
+    }
+
+    template<tensorRank rank_>
+    template<tensorRank newRank>
+    requires(newRank < rank_ && newRank != 0)
+    constexpr Shape<newRank> Shape<rank_>::demote() const {
+        Shape<newRank> newShape{};
+        std::ranges::copy(dimensions.begin(), dimensions.begin() + newRank,
+                          newShape.dimensions.begin());
+        return newShape;
+    }
+
+    template<tensorRank rank_>
+    template<tensorRank newRank>
+    requires(newRank == 0)
+    constexpr Shape<newRank> Shape<rank_>::demote() const {
+        return Shape<newRank>{};
     }
 
     template<tensorRank rank_>
@@ -101,5 +127,15 @@ namespace TensorII::Core {
                                      [](tensorDimension d) { return d == -1; });
         *negative = deducedDim;
         return newShape;
+    }
+
+    template<std::convertible_to<tensorDimension>... Dims>
+    inline constexpr Shape<sizeof...(Dims)> Shape<0>::augment(const Dims... dims) const {
+        return Shape<sizeof...(Dims)>{dims ... };
+    }
+
+    template<tensorRank rankDiff>
+    inline constexpr Shape<rankDiff> Shape<0>::augment(const tensorDimension (&array)[rankDiff]) const {
+        return Shape<rankDiff>(array);
     }
 }

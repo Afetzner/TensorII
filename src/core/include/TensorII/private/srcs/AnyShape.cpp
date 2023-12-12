@@ -9,16 +9,33 @@ namespace TensorII::Core {
 
     template<tensorRank maxRank>
     constexpr AnyShape<maxRank>::AnyShape()
-    : currRank(std::nullopt)
+    : data{}
+    , currRank(std::nullopt)
     {}
 
     template<tensorRank maxRank>
     constexpr AnyShape<maxRank>::~AnyShape() = default;
 
     template<tensorRank maxRank>
+    template<std::convertible_to<tensorDimension> ... Dims>
+    requires(sizeof...(Dims) <= maxRank)
+    constexpr AnyShape<maxRank>::AnyShape(const Dims ... dims)
+    : data{0}
+    {
+        static_assert(std::is_trivially_copyable<Shape<maxRank>>::value);
+        static_assert(std::is_trivially_copyable<tensorDimension[maxRank]>::value);
+        tensorDimension* where = std::bit_cast<Shape<maxRank>>(data).dimensions.data();
+        ([&where](tensorDimension dim){
+            *where = dim;
+            where = &where[1];
+        }(dims), ...);
+        currRank = sizeof...(dims);
+    }
+
+    template<tensorRank maxRank>
     template<tensorRank rank_>
     requires(rank_ <= maxRank)
-    constexpr AnyShape<maxRank>& AnyShape<maxRank>::emplace(const tensorDimension (&array)[rank_]) {
+    AnyShape<maxRank>& AnyShape<maxRank>::emplace(const tensorDimension (&array)[rank_]) {
         new(&data) Shape(array);
         currRank = rank_;
         return *this;
@@ -26,8 +43,8 @@ namespace TensorII::Core {
 
     template<tensorRank maxRank>
     template<std::convertible_to<tensorDimension> ... Dims>
-    requires(sizeof...(Dims) < maxRank)
-    constexpr AnyShape<maxRank>& AnyShape<maxRank>::emplace(Dims ...dims) {
+    requires(sizeof...(Dims) <= maxRank)
+    AnyShape<maxRank>& AnyShape<maxRank>::emplace(const Dims ...dims) {
         new(&data) Shape(dims...);
         currRank = sizeof...(dims);
         return *this;
@@ -38,7 +55,7 @@ namespace TensorII::Core {
     requires(newRank <= maxRank)
     inline constexpr const Shape<newRank>* AnyShape<maxRank>::shape() const {
         if (currRank == newRank) {
-            return reinterpret_cast<const Shape<newRank>*>(&data);
+            return &std::bit_cast<Shape<newRank>>(data);
         } else {
             throw std::bad_any_cast();
         }
@@ -103,13 +120,14 @@ namespace TensorII::Core {
         if (!currRank.has_value()){
             throw std::runtime_error("Cannot get size of AnyShape in unassigned state");
         }
-        // Ideally, this would defer to Shape::size() instead of duplicating code.
-        // Currently, I'm not sure how to cast it to only dynamically decidable shape
-        auto is_positive = [](tensorDimension d) { return d > 0; };
-        auto positives = reinterpret_cast<const Shape<maxRank>*>(&data)->dimensions
-                         | std::views::take(currRank.value())
-                         | std::views::filter(is_positive);
-        return std::accumulate(positives.begin(), positives.end(), tensorDimension(1), std::multiplies());
+//        // Ideally, this would defer to Shape::size() instead of duplicating code.
+//        // Currently, I'm not sure how to cast it to only dynamically decidable shape
+//        auto is_positive = [](tensorDimension d) { return d > 0; };
+//        auto positives = data.dimensions
+//                         | std::views::take(currRank.value())
+//                         | std::views::filter(is_positive);
+//        return std::accumulate(positives.begin(), positives.end(), tensorDimension(1), std::multiplies());
+        return std::bit_cast<Shape<maxRank>>(data).size();
     }
 
     template<tensorRank maxRank>
@@ -119,11 +137,7 @@ namespace TensorII::Core {
         if (!currRank.has_value()) {
             return false;
         }
-        auto is_non_positive = [](tensorDimension d) { return d <= 0; };
-        auto non_positives = reinterpret_cast<const Shape<maxRank>*>(&data)->dimensions
-                             | std::views::take(currRank.value())
-                             | std::views::filter(is_non_positive);
-        return non_positives.empty();
+        return std::bit_cast<Shape<maxRank>>(data).isValidExplicit();
     }
 
     template<tensorRank maxRank>
@@ -133,17 +147,11 @@ namespace TensorII::Core {
         if (!currRank.has_value()) {
             return false;
         }
-        auto is_non_positive = [](tensorDimension d) { return d <= 0; };
-        auto non_positives = reinterpret_cast<const Shape<maxRank>*>(&data)->dimensions
-                             | std::views::take(currRank.value())
-                             | std::views::filter(is_non_positive);
-        return (std::ranges::distance(non_positives) == 1
-                && (*non_positives.begin() == -1)
-        );
+        return std::bit_cast<Shape<maxRank>>(data).isValidImplicit();
     }
 
     template<tensorRank maxRank>
     constexpr bool AnyShape<maxRank>::isValid() const {
-        return currRank.has_value() && (this->isValidExplicit() || this->isValidImplicit());
+        return std::bit_cast<Shape<maxRank>>(data).isValid();
     }
 }
