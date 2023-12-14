@@ -7,14 +7,16 @@
 
 #include <type_traits>
 #include <optional>
-#include "TensorII/Shape.h"
+#include <ranges>
+#include <array>
 
+#include "TensorII/Shape.h"
 
 namespace TensorII::Core {
 
     template <tensorRank maxRank>
     class AnyShape{
-        tensorDimension data[maxRank];
+        std::array<tensorDimension, maxRank> dimensions;
         std::optional<tensorRank> currRank;
 
     public:
@@ -25,9 +27,17 @@ namespace TensorII::Core {
         requires(sizeof...(Dims) <= maxRank)
         constexpr explicit AnyShape(const Dims ... dims);
 
-        template<tensorRank rank>
-        requires(rank <= maxRank)
-        AnyShape& emplace(const tensorDimension (&array)[rank]);
+        template <typename Range>
+        constexpr explicit AnyShape(Range range)
+        requires (std::ranges::range<Range>
+                  && std::ranges::sized_range<Range>
+                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
+
+        template<typename Range>
+        AnyShape& emplace(Range range)
+        requires (std::ranges::range<Range>
+                  && std::ranges::sized_range<Range>
+                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
 
         template<std::convertible_to<tensorDimension> ... Dims>
         requires(sizeof...(Dims) <= maxRank)
@@ -35,19 +45,42 @@ namespace TensorII::Core {
 
         template<tensorRank newRank>
         requires(newRank <= maxRank)
-        constexpr const Shape<newRank>* shape() const;
+        constexpr Shape<newRank> shape() const;
+
+        template <std::convertible_to<tensorDimension> ... Dims>
+        [[nodiscard]]
+        constexpr AnyShape<maxRank> augmented(const Dims ... dims) const;
+
+        template<typename Range>
+        [[nodiscard]]
+        constexpr AnyShape<maxRank> augmented(Range dims) const
+        requires (std::ranges::range<Range>
+                && std::ranges::sized_range<Range>
+                && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
+
+        [[nodiscard]]
+        constexpr AnyShape<maxRank> demoted(tensorRank newRank) const;
+
+        template <tensorRank newRank, std::convertible_to<tensorDimension> ... Dims>
+        requires(newRank <= maxRank + sizeof...(Dims))
+        void augment(const Dims ... dims);
+
+        template <tensorRank newRank, tensorRank rankDiff>
+        requires(newRank <= maxRank + rankDiff)
+        void augment(Util::ViewOfConvertibleTo<tensorDimension> auto dims);
+
+        void demote(tensorRank newRank);
 
         constexpr void reset();
 
         template <tensorRank otherRank>
         requires(otherRank <= maxRank)
-        constexpr AnyShape& operator=(const Shape<otherRank>& otherShape);
+        AnyShape& operator=(const Shape<otherRank>& otherShape);
 
         template <tensorRank otherMaxRank>
-        constexpr AnyShape& operator=(const AnyShape<otherMaxRank>& shape);
+        AnyShape& operator=(const AnyShape<otherMaxRank>& shape);
 
         template <tensorRank otherRank>
-        requires(otherRank <= maxRank)
         constexpr bool operator==(const Shape<otherRank>& otherShape) const;
 
         template <tensorRank otherMaxRank>
@@ -71,6 +104,5 @@ namespace TensorII::Core {
         constexpr bool isValid() const;
     };
 }
-
 
 #endif //TENSOR_ANYSHAPE_H

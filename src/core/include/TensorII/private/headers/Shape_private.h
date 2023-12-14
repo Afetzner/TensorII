@@ -11,6 +11,7 @@
 #include <ranges>
 #include <array>
 #include <stdexcept>
+#include "TensorII/private/ConceptUtil.h"
 
 namespace TensorII::Core {
 
@@ -29,23 +30,32 @@ namespace TensorII::Core {
 
         constexpr Shape(const tensorDimension (&array)[rank_]); // NOLINT(google-explicit-constructor)
 
+        template<typename Range>
+        constexpr explicit Shape(Range range)
+        requires (std::ranges::range<Range>
+                  && std::ranges::sized_range<Range>
+                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
+
         template<std::convertible_to<tensorDimension> ... Dims>
         requires(sizeof...(Dims) == rank_)
-        constexpr Shape(const Dims& ... dims); // NOLINT(google-explicit-constructor)
+        explicit constexpr Shape(const Dims& ... dims);
 
         template <std::convertible_to<tensorDimension> ... Dims>
-        constexpr Shape<rank_ + sizeof...(Dims)> augment(const Dims ... dims) const;
+        constexpr Shape<rank_ + sizeof...(Dims)> augmented(const Dims ... dims) const;
 
-        template <tensorRank rankDiff>
-        constexpr Shape<rank_ + rankDiff> augment(const tensorDimension (&array)[rankDiff]) const;
+        template<tensorRank newRank, typename Range>
+        constexpr Shape<newRank> augmented(Range augmentDimensions) const
+        requires (std::ranges::range<Range>
+                  && std::ranges::sized_range<Range>
+                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
 
         template <tensorRank newRank>
         requires(newRank < rank_ && newRank != 0)
-        constexpr Shape<newRank> demote() const;
+        constexpr Shape<newRank> demoted() const;
 
         template <tensorRank newRank>
         requires(newRank == 0)
-        constexpr Shape<newRank> demote() const;
+        constexpr Shape<newRank> demoted() const;
 
         template <tensorRank otherRank>
         constexpr bool operator==(const Shape<otherRank>& other) const;
@@ -74,10 +84,13 @@ namespace TensorII::Core {
         constexpr Shape() = default;
 
         template <std::convertible_to<tensorDimension> ... Dims>
-        constexpr Shape<sizeof...(Dims)> augment(const Dims ... dims) const;
+        constexpr Shape<sizeof...(Dims)> augmented(const Dims ... dims) const;
 
-        template <tensorRank rankDiff>
-        constexpr Shape<rankDiff> augment(const tensorDimension (&array)[rankDiff]) const;
+        template<tensorRank newRank, typename Range>
+        constexpr Shape<newRank> augmented(Range augmentDimensions) const
+        requires (std::ranges::range<Range>
+                  && std::ranges::sized_range<Range>
+                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
 
         template <tensorRank otherRank>
         constexpr bool operator==(const Shape<otherRank>& other) {

@@ -143,7 +143,7 @@ TEST_CASE("AnyShape emplace array", "[Shape]") {
     CHECK(anyShape != Shape{1, 2, 3, 4});
 
     // Set a value
-    anyShape.emplace({1, 2, 3});
+    anyShape.emplace(std::to_array<tensorDimension>({1, 2, 3}));
     CHECK(anyShape.rank() == 3);
     CHECK(anyShape.size() == 6);
     CHECK(anyShape.isValidExplicit());
@@ -153,7 +153,7 @@ TEST_CASE("AnyShape emplace array", "[Shape]") {
     CHECK(anyShape != Shape{1, 2, 3, 4});
 
     // Go up a rank
-    anyShape.emplace({10, 20, 30, 40});
+    anyShape.emplace(std::to_array<tensorDimension>({10, 20, 30, 40}));
     CHECK(anyShape.rank() == 4);
     CHECK(anyShape.size() == 240'000);
     CHECK(anyShape.isValidExplicit());
@@ -163,7 +163,7 @@ TEST_CASE("AnyShape emplace array", "[Shape]") {
     CHECK(anyShape == Shape{10, 20, 30, 40});
 
     // Go down a rank
-    anyShape.emplace({1, 2});
+    anyShape.emplace(std::to_array<tensorDimension>({1, 2}));
     CHECK(anyShape.rank() == 2);
     CHECK(anyShape.size() == 2);
     CHECK(anyShape.isValidExplicit());
@@ -183,7 +183,7 @@ TEST_CASE("AnyShape emplace array", "[Shape]") {
     CHECK(anyShape != Shape{1, 2, 3, 4});
 
     // another value
-    anyShape.emplace({1, 2, 3});
+    anyShape.emplace(std::to_array<tensorDimension>({1, 2, 3}));
     CHECK(anyShape.rank() == 3);
     CHECK(anyShape.size() == 6);
     CHECK(anyShape.isValidExplicit());

@@ -4,6 +4,8 @@
 
 #include "TensorII/private/headers/Shape_private.h"
 #include <ranges>
+#include <algorithm>
+#include "TensorII/private/ConceptUtil.h"
 
 namespace TensorII::Core {
 
@@ -18,14 +20,31 @@ namespace TensorII::Core {
     template<tensorRank rank_>
     template<std::convertible_to<tensorDimension> ... Dims>
     requires(sizeof...(Dims) == rank_)
-    constexpr Shape<rank_>::Shape(const Dims &... dims) : dimensions{dims...} {}
+    constexpr Shape<rank_>::Shape(const Dims &... dims)
+    : dimensions{dims...}
+    {}
+
+    template<tensorRank rank_>
+    template<typename Range>
+    constexpr Shape<rank_>::Shape(Range range)
+    requires (std::ranges::range<Range>
+              && std::ranges::sized_range<Range>
+              && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>)
+      : dimensions{} {
+        if (std::ranges::size(range) != rank_){
+            throw std::range_error("Length of range does not match declared dimensions");
+        }
+        std::ranges::copy_n(range.begin(), rank_, dimensions.begin());
+    }
 
     template<tensorRank rank_>
     template<std::convertible_to<tensorDimension>... Dims>
-    constexpr Shape<rank_ + sizeof...(Dims)> Shape<rank_>::augment(const Dims... dims) const {
+    constexpr Shape<rank_ + sizeof...(Dims)> Shape<rank_>::augmented(const Dims... dims) const {
         Shape<rank_ + sizeof...(Dims)> newShape{};
+        // Copy old dimensions
         std::ranges::copy(dimensions.begin(), dimensions.end(),
                           newShape.dimensions.begin());
+        // Copy new dimensions
         tensorDimension* where = &newShape.dimensions[rank_];
         ([&where](tensorDimension dim){
             *where = dim;
@@ -35,19 +54,27 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    template<tensorRank rankDiff>
-    constexpr Shape<rank_ + rankDiff> Shape<rank_>::augment(const tensorDimension (&array)[rankDiff]) const {
-        Shape<rank_ + rankDiff> newShape{};
+    template<tensorRank newRank, typename Range>
+    constexpr Shape<newRank> Shape<rank_>::augmented(Range augmentDimensions) const
+    requires (std::ranges::range<Range>
+              && std::ranges::sized_range<Range>
+              && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>){
+        if (rank_ + std::ranges::size(augmentDimensions) != newRank){
+            throw std::range_error("Length of range does not match declared dimensions");
+        }
+        Shape<newRank> newShape;
+        // Copy old dimensions
         std::ranges::copy(dimensions.begin(), dimensions.end(),
                           newShape.dimensions.begin());
-        std::ranges::copy(array, newShape.dimensions.begin() + rank_);
+        // Copy new dimensions
+        std::ranges::copy(augmentDimensions, newShape.dimensions.begin() + rank_);
         return newShape;
     }
 
     template<tensorRank rank_>
     template<tensorRank newRank>
     requires(newRank < rank_ && newRank != 0)
-    constexpr Shape<newRank> Shape<rank_>::demote() const {
+    constexpr Shape<newRank> Shape<rank_>::demoted() const {
         Shape<newRank> newShape{};
         std::ranges::copy(dimensions.begin(), dimensions.begin() + newRank,
                           newShape.dimensions.begin());
@@ -57,15 +84,16 @@ namespace TensorII::Core {
     template<tensorRank rank_>
     template<tensorRank newRank>
     requires(newRank == 0)
-    constexpr Shape<newRank> Shape<rank_>::demote() const {
+    constexpr Shape<newRank> Shape<rank_>::demoted() const {
         return Shape<newRank>{};
     }
 
     template<tensorRank rank_>
     template<tensorRank otherRank>
     constexpr bool Shape<rank_>::operator==(const Shape<otherRank> &other) const {
-        return (otherRank == rank_) && std::equal(dimensions.begin(), dimensions.end(),
-                                                 other.dimensions.begin(), other.dimensions.end());
+        return (otherRank == rank_)
+                && std::equal(dimensions.begin(), dimensions.end(),
+                    other.dimensions.begin(), other.dimensions.end());
     }
 
     template<tensorRank rank_>
@@ -130,12 +158,18 @@ namespace TensorII::Core {
     }
 
     template<std::convertible_to<tensorDimension>... Dims>
-    inline constexpr Shape<sizeof...(Dims)> Shape<0>::augment(const Dims... dims) const {
+    inline constexpr Shape<sizeof...(Dims)> Shape<0>::augmented(const Dims... dims) const {
         return Shape<sizeof...(Dims)>{dims ... };
     }
 
-    template<tensorRank rankDiff>
-    inline constexpr Shape<rankDiff> Shape<0>::augment(const tensorDimension (&array)[rankDiff]) const {
-        return Shape<rankDiff>(array);
+    template<tensorRank newRank, typename Range>
+    constexpr Shape<newRank> Shape<0>::augmented(Range augmentDimensions) const
+    requires (std::ranges::range<Range>
+              && std::ranges::sized_range<Range>
+              && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>){
+        if (std::ranges::size(augmentDimensions) != newRank){
+            throw std::range_error("Length of range does not match declared dimensions");
+        }
+        return Shape<newRank>{augmentDimensions};
     }
 }

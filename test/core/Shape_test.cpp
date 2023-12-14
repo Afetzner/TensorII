@@ -52,6 +52,41 @@ TEST_CASE("Invalid Shapes", "[Shape]"){
     STATIC_CHECK_FALSE(Shape{0, 0, 0}.isValid());
 }
 
+TEST_CASE("Shape construction, Args", "[Shape]"){
+    constexpr Shape<0> shape0 = Shape();
+    static_assert(shape0 == Shape{});
+
+    constexpr Shape<1> shape1 = Shape(1);
+    static_assert(shape1 == Shape{1});
+
+    constexpr Shape<2> shape2 = Shape(1, 2);
+    static_assert(shape2 == Shape{1, 2});
+
+    constexpr Shape<3> shape3 = Shape(1, 2, 3);
+    static_assert(shape3 == Shape{1, 2, 3});
+
+    constexpr Shape<4> shape4 = Shape(1, 2, 3, 4);
+    static_assert(shape4 == Shape{1, 2, 3, 4});
+}
+
+TEST_CASE("Shape construction, std::array", "[Shape]"){
+    constexpr std::array<tensorDimension, 1> arr1 {1};
+    constexpr Shape<1> shape1 = Shape<1>(arr1);
+    static_assert(shape1 == Shape{1});
+
+    constexpr std::array<tensorDimension, 2> arr2 {1, 2};
+    constexpr Shape<2> shape2 = Shape<2>(arr2);
+    static_assert(shape2 == Shape{1, 2});
+
+    constexpr std::array<tensorDimension, 3> arr3 {1, 2, 3};
+    constexpr Shape<3> shape3 = Shape<3>(arr3);
+    static_assert(shape3 == Shape{1, 2, 3});
+
+    constexpr std::array<tensorDimension, 4> arr4 {1, 2, 3, 4};
+    constexpr Shape<4> shape4 = Shape<4>(arr4);
+    static_assert(shape4 == Shape{1, 2, 3, 4});
+}
+
 TEST_CASE("Shape size", "[Shape]"){
     // Explicit shapes
     STATIC_CHECK(Shape{}.size() == 1);
@@ -114,17 +149,17 @@ TEST_CASE("Shape deduction", "[Shape]"){
 TEST_CASE("Shape augment args", "[Shape]"){
     {
         constexpr Shape before = Shape {1, 2, 3};
-        constexpr Shape after = before.augment(4);
+        constexpr Shape after = before.augmented(4);
         static_assert(after == Shape{1, 2, 3, 4});
     }
     {
         constexpr Shape before = Shape {1, 2, 3};
-        constexpr Shape after = before.augment(4, 5, 6, 7);
+        constexpr Shape after = before.augmented(4, 5, 6, 7);
         static_assert(after == Shape{1, 2, 3, 4, 5, 6, 7});
     }
     {
         constexpr Shape before = Shape {};
-        constexpr Shape after = before.augment(1, 2, 3);
+        constexpr Shape after = before.augmented(1, 2, 3);
         static_assert(after == Shape{1, 2, 3});
     }
 }
@@ -132,17 +167,17 @@ TEST_CASE("Shape augment args", "[Shape]"){
 TEST_CASE("Shape augment array", "[Shape]"){
     {
         constexpr Shape before = Shape {1, 2, 3};
-        constexpr Shape after = before.augment({4});
+        constexpr Shape after = before.augmented<4>(std::array{4});
         static_assert(after == Shape{1, 2, 3, 4});
     }
     {
         constexpr Shape before = Shape {1, 2, 3};
-        constexpr Shape after = before.augment({4, 5, 6, 7});
+        constexpr Shape after = before.augmented<7>(std::array{4, 5, 6, 7});
         static_assert(after == Shape{1, 2, 3, 4, 5, 6, 7});
     }
     {
         constexpr Shape before = Shape {};
-        constexpr Shape after = before.augment({1, 2, 3});
+        constexpr Shape after = before.augmented<3>(std::array{1, 2, 3});
         static_assert(after == Shape{1, 2, 3});
     }
 }
@@ -150,12 +185,12 @@ TEST_CASE("Shape augment array", "[Shape]"){
 TEST_CASE("Shape demote", "[Shape]"){
     {
         constexpr Shape before = Shape {1, 2, 3};
-        constexpr Shape after = before.demote<2>();
+        constexpr Shape after = before.demoted<2>();
         static_assert(after == Shape{1, 2});
     }
     {
         constexpr Shape before = Shape {1, 2, 3};
-        constexpr Shape after = before.demote<0>();
+        constexpr Shape after = before.demoted<0>();
         static_assert(after == Shape{});
     }
 }
