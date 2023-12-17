@@ -11,17 +11,36 @@
 #include <ranges>
 #include <array>
 #include <stdexcept>
+
 #include "TensorII/private/ConceptUtil.h"
+#include "TensorII/Types.h"
 
 namespace TensorII::Core {
 
-    using tensorDimension = long;  // 2^32 = 4G, probably don't need larger
-    using tensorRank = size_t;
-    using tensorSize = size_t;
+    template<tensorRank> struct Shape;
+
+    class ShapeIterator {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type        = tensorDimension;
+        using difference_type   = std::ptrdiff_t;
+        using pointer           = tensorDimension *;
+        using reference         = tensorDimension &;
+
+        explicit constexpr ShapeIterator(tensorDimension* ptr = nullptr) : m_ptr(ptr) {}
+        reference operator*() const { return *m_ptr; }
+        pointer operator->() { return m_ptr; }
+        ShapeIterator& operator++() { m_ptr++; return *this; }
+        ShapeIterator operator++(int) { ShapeIterator tmp = *this; ++(*this); return tmp; } // NOLINT(cert-dcl21-cpp)
+        friend bool operator== (const ShapeIterator& a, const ShapeIterator& b) { return a.m_ptr == b.m_ptr; };
+        friend bool operator!= (const ShapeIterator& a, const ShapeIterator& b) { return a.m_ptr != b.m_ptr; };
+    private:
+        pointer m_ptr;
+    };
 
     template <tensorRank rank_>
     struct Shape {
-        std::array<tensorDimension, rank_> dimensions;
+        std::array<tensorDimension, std::max(rank_, 1U)> dimensions;
 
         constexpr Shape();
         constexpr ~Shape() = default;
@@ -30,11 +49,8 @@ namespace TensorII::Core {
 
         constexpr Shape(const tensorDimension (&array)[rank_]); // NOLINT(google-explicit-constructor)
 
-        template<typename Range>
-        constexpr explicit Shape(Range range)
-        requires (std::ranges::range<Range>
-                  && std::ranges::sized_range<Range>
-                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
+        template<Util::ContainerCompatibleRange<tensorDimension> Range>
+        constexpr explicit Shape(from_range_t, Range&& range);
 
         template<std::convertible_to<tensorDimension> ... Dims>
         requires(sizeof...(Dims) == rank_)
@@ -43,11 +59,8 @@ namespace TensorII::Core {
         template <std::convertible_to<tensorDimension> ... Dims>
         constexpr Shape<rank_ + sizeof...(Dims)> augmented(const Dims ... dims) const;
 
-        template<tensorRank newRank, typename Range>
-        constexpr Shape<newRank> augmented(Range augmentDimensions) const
-        requires (std::ranges::range<Range>
-                  && std::ranges::sized_range<Range>
-                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
+        template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
+        constexpr Shape<newRank> augmented(from_range_t, Range&& augmentDimensions) const;
 
         template <tensorRank newRank>
         requires(newRank < rank_ && newRank != 0)
@@ -76,41 +89,15 @@ namespace TensorII::Core {
 
         [[nodiscard]]
         constexpr bool isValid() const;
-    };
-
-    template <>
-    struct Shape<0> {
-
-        constexpr Shape() = default;
-
-        template <std::convertible_to<tensorDimension> ... Dims>
-        constexpr Shape<sizeof...(Dims)> augmented(const Dims ... dims) const;
-
-        template<tensorRank newRank, typename Range>
-        constexpr Shape<newRank> augmented(Range augmentDimensions) const
-        requires (std::ranges::range<Range>
-                  && std::ranges::sized_range<Range>
-                  && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>);
-
-        template <tensorRank otherRank>
-        constexpr bool operator==(const Shape<otherRank>& other) {
-            return otherRank == 0;
-        };
 
         [[nodiscard]]
-        static constexpr tensorRank rank() { return 0; }
+        constexpr ShapeIterator begin() const { return ShapeIterator{dimensions.data()}; }
 
         [[nodiscard]]
-        static constexpr tensorSize size() { return 1; };
-
-        [[nodiscard]]
-        static constexpr bool isValidExplicit() { return true; };
-
-        [[nodiscard]]
-        static constexpr bool isValidImplicit() { return false; };
-
-        [[nodiscard]]
-        static constexpr bool isValid() { return true; };
+        constexpr ShapeIterator end() const {
+            if (rank_ != 0) { return ShapeIterator{dimensions.data() + dimensions.size()}; }
+            return ShapeIterator{dimensions.data()};
+        }
     };
 
     Shape() -> Shape<0>;

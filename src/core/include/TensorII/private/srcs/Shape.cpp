@@ -5,7 +5,6 @@
 #include "TensorII/private/headers/Shape_private.h"
 #include <ranges>
 #include <algorithm>
-#include "TensorII/private/ConceptUtil.h"
 
 namespace TensorII::Core {
 
@@ -25,12 +24,9 @@ namespace TensorII::Core {
     {}
 
     template<tensorRank rank_>
-    template<typename Range>
-    constexpr Shape<rank_>::Shape(Range range)
-    requires (std::ranges::range<Range>
-              && std::ranges::sized_range<Range>
-              && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>)
-      : dimensions{} {
+    template<Util::ContainerCompatibleRange<tensorDimension> Range>
+    constexpr Shape<rank_>::Shape(from_range_t, Range&& range)
+    : dimensions{} {
         if (std::ranges::size(range) != rank_){
             throw std::range_error("Length of range does not match declared dimensions");
         }
@@ -54,11 +50,8 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    template<tensorRank newRank, typename Range>
-    constexpr Shape<newRank> Shape<rank_>::augmented(Range augmentDimensions) const
-    requires (std::ranges::range<Range>
-              && std::ranges::sized_range<Range>
-              && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>){
+    template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
+    constexpr Shape<newRank> Shape<rank_>::augmented(from_range_t, Range&& augmentDimensions) const {
         if (rank_ + std::ranges::size(augmentDimensions) != newRank){
             throw std::range_error("Length of range does not match declared dimensions");
         }
@@ -91,6 +84,8 @@ namespace TensorII::Core {
     template<tensorRank rank_>
     template<tensorRank otherRank>
     constexpr bool Shape<rank_>::operator==(const Shape<otherRank> &other) const {
+        // Edge case for rank 0
+        if (rank_ == 0 and otherRank == 0) { return true; }
         return (otherRank == rank_)
                 && std::equal(dimensions.begin(), dimensions.end(),
                     other.dimensions.begin(), other.dimensions.end());
@@ -106,6 +101,8 @@ namespace TensorII::Core {
 
     template<tensorRank rank_>
     constexpr tensorSize Shape<rank_>::size() const {
+        // Edge case for rank 0
+        if (rank_ == 0) { return 1; }
         // Product of all positive dimensions. size of an invalid shape is undefined
         auto is_positive = [](tensorDimension d) { return d > 0; };
         auto positives = dimensions | std::views::filter(is_positive);
@@ -114,6 +111,8 @@ namespace TensorII::Core {
 
     template<tensorRank rank_>
     constexpr bool Shape<rank_>::isValidExplicit() const {
+        // Edge case for rank 0
+        if (rank_ == 0) { return true; }
         // Valid explicit if there are no non-positive dimensions
         auto is_non_positive = [](tensorDimension d) { return d <= 0; };
         auto non_positives = dimensions | std::views::filter(is_non_positive);
@@ -122,6 +121,8 @@ namespace TensorII::Core {
 
     template<tensorRank rank_>
     constexpr bool Shape<rank_>::isValidImplicit() const {
+        // Edge case for rank 0
+        if (rank_ == 0) { return false; }
         // Valid explicit if there is only one non-positive dimension, and it is -1
         auto is_non_positive = [](tensorDimension d) { return d <= 0; };
         auto non_positives = dimensions | std::views::filter(is_non_positive);
@@ -138,10 +139,10 @@ namespace TensorII::Core {
     template<tensorRank explicitRank, tensorRank implicitRank>
     constexpr Shape<implicitRank>
     deduceShape(const Shape<explicitRank> &explicitShape, const Shape<implicitRank> &implicitShape) {
-        if (!explicitShape.isValidExplicit()) {
+        if (not explicitShape.isValidExplicit()) {
             throw std::runtime_error("Arg 'explicitShape' is not a valid explicit shape");
         }
-        if (!implicitShape.isValidImplicit()) {
+        if (not implicitShape.isValidImplicit()) {
             throw std::runtime_error("Arg 'implicitShape' is not a valid implicit shape");
         }
 
@@ -155,21 +156,5 @@ namespace TensorII::Core {
                                      [](tensorDimension d) { return d == -1; });
         *negative = deducedDim;
         return newShape;
-    }
-
-    template<std::convertible_to<tensorDimension>... Dims>
-    inline constexpr Shape<sizeof...(Dims)> Shape<0>::augmented(const Dims... dims) const {
-        return Shape<sizeof...(Dims)>{dims ... };
-    }
-
-    template<tensorRank newRank, typename Range>
-    constexpr Shape<newRank> Shape<0>::augmented(Range augmentDimensions) const
-    requires (std::ranges::range<Range>
-              && std::ranges::sized_range<Range>
-              && std::convertible_to<std::ranges::range_value_t<Range>, tensorDimension>){
-        if (std::ranges::size(augmentDimensions) != newRank){
-            throw std::range_error("Length of range does not match declared dimensions");
-        }
-        return Shape<newRank>{augmentDimensions};
     }
 }
