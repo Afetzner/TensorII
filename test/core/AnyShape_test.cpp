@@ -6,7 +6,7 @@
 // STATIC_CHECK(anyShape0 == Shape{});  -->  STATIC_CHECK((anyShape0 == Shape{}));
 // because shapes are ranges, Catch2 is trying to use its own range comparator instead of the defined operator==
 
-#include "TensorII/private/AnyShape.h"
+#include "TensorII/AnyShape.h"
 #include "Catch2/catch_test_macros.hpp"
 
 using namespace TensorII::Core;
@@ -389,4 +389,18 @@ TEST_CASE("AnyShape demote", "[AnyShape]") {
         CHECK((anyShape4 == Shape{1, 2}));
         CHECK_THROWS(anyShape4.demote(3));
     }
+}
+
+TEST_CASE("AnyShape size", "[Shape]"){
+    // Explicit shapes
+    STATIC_CHECK(AnyShape<5>{}.size() == 1);
+    STATIC_CHECK(AnyShape<5>{5}.size() == 5);
+    STATIC_CHECK(AnyShape<5>{5, 2}.size() == 10);
+    STATIC_CHECK(AnyShape<5>{5, 1, 1, 2, 3}.size() == 30);
+
+    // Implicit shapes
+    STATIC_CHECK(AnyShape<5>{-1}.size() == 1);
+    STATIC_CHECK(AnyShape<5>{-1, 2}.size() == 2);
+    STATIC_CHECK(AnyShape<5>{2, -1}.size() == 2);
+    STATIC_CHECK(AnyShape<5>{23, 4, 5, -1, 7}.size() == 3220);
 }

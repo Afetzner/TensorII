@@ -7,25 +7,20 @@
 
 #include "TensorII/private/headers/Tensor_predecl.h"
 #include "TensorII/Shape.h"
+#include "TensorII/AnyShape.h"
 #include "TensorII/TensorDType.h"
 #include "TensorII/private/TensorIndex.h"
 
 namespace TensorII::Core {
-    template<Scalar DType, auto underlyingShape>
+    template<Scalar DType, auto shape, auto underlyingShape>
     class TensorView {
         Tensor<DType, underlyingShape>* source;
-        std::array<IndexTriple, underlyingShape.rank()> indecies;
-
-//        Shape shape;
+        std::array<IndexTriple, shape.rank()> indecies;
 
     public:
-        constexpr TensorView()
+        constexpr TensorView(Tensor<DType, underlyingShape>* source) : source(source) {};
 
-        consteval tensorRank rank();
-
-        consteval tensorSize size();
-
-        consteval Tensor<DType, underlyingShape>* tensor();
+        void operator[](IndexTriple triple);
     };
 }
 

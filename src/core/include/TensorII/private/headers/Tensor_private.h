@@ -8,6 +8,7 @@
 #include <memory>
 #include <array>
 
+#include "TensorII/Types.h"
 #include "Tensor_predecl.h"
 #include "TensorII/Shape.h"
 #include "TensorII/TensorDType.h"
@@ -18,25 +19,32 @@ namespace TensorII::Core {
 
     template <Scalar DType, auto shape_, typename Allocator>
     class Tensor{
+        Tensor();
     public:
-        consteval Shape<shape_.rank()> shape() { return shape_; };
-
-        static constexpr tensorSize size() noexcept { return shape_.size(); };
-
-        static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
-
         explicit Tensor(typename Private::TensorInitializer<DType, shape_>::Array&);
-
         explicit Tensor(Private::TensorInitializer<DType, shape_>&&);
 
-        constexpr DType* data() noexcept;
+        template <Util::ContainerCompatibleRange<DType> Range>
+        explicit Tensor(from_range_t, Range&&);
 
+        Tensor(const Tensor&) = delete;
+        Tensor(Tensor&&) noexcept;
+
+        Tensor& operator=(const Tensor&) = delete;
+        Tensor& operator=(Tensor&&) noexcept;
+
+        constexpr Shape<shape_.rank()> shape();
+
+        static constexpr tensorSize size() noexcept;
+        static constexpr tensorSize size_in_bytes() noexcept;
+
+        constexpr DType* data() noexcept;
         constexpr const DType* data() const noexcept;
 
     private:
         using Array = std::array<DType, size()>;
         struct ArrayDeleter {
-            void operator()(std::array<DType, size()>* a);
+            void operator()(Array* a);
         };
         std::unique_ptr<Array, ArrayDeleter> data_;
     };
@@ -59,18 +67,25 @@ namespace TensorII::Core {
     // 0D tensor
     template <Scalar DType, typename Allocator>
     class Tensor<DType, Shape<0>{}, Allocator> {
+        Tensor();
     public:
-        consteval Shape<0> shape() { return Shape{}; };
-
         Tensor(DType value); // NOLINT(google-explicit-constructor)
         explicit Tensor(Private::TensorInitializer<DType, Shape<0>{}>&& initializer);
 
-        Tensor(const Tensor&) = delete;
+        template <Util::ContainerCompatibleRange<DType> Range>
+        explicit Tensor(from_range_t, Range&&);
 
-        Tensor(Tensor&&) = delete;
+        Tensor(const Tensor&);
+        Tensor(Tensor&&) noexcept;
 
-        static constexpr tensorSize size() noexcept { return Shape<0>::size(); };
-        static constexpr tensorSize size_in_bytes() noexcept { return size() * sizeof(DType); };
+        Tensor& operator=(const Tensor&);
+        Tensor& operator=(Tensor&&) noexcept;
+
+        constexpr Shape<0> shape() noexcept;
+
+        static constexpr tensorSize size() noexcept;
+        static constexpr tensorSize size_in_bytes() noexcept;
+
         constexpr DType* data() noexcept;
         constexpr const DType* data() const noexcept;
 
