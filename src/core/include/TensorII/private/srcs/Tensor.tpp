@@ -2,6 +2,9 @@
 // Created by Amy Fetzner on 11/19/2023.
 //
 
+#ifndef TENSOR_TENSOR_TPP
+#define TENSOR_TENSOR_TPP
+
 #include "TensorII/private/headers/Tensor_private.h"
 
 namespace TensorII::Core {
@@ -71,3 +74,5 @@ namespace TensorII::Core {
     constexpr const DType *Tensor<DType, Shape<0>{}, Allocator>::data() const noexcept { return &data_; }
     //endregion 0D specialization
 }
+
+#endif //TENSOR_TENSOR_TPP

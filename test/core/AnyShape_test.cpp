@@ -332,3 +332,61 @@ TEST_CASE("AnyShape augment args", "[AnyShape]") {
     CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
     CHECK_THROWS(anyShape4.augment(1));
 }
+
+TEST_CASE("AnyShape augment from range vector", "[AnyShape]") {
+    AnyShape<10> anyShape0{};
+    anyShape0.augment(from_range, std::vector<tensorDimension>{});
+    CHECK((anyShape0 == Shape{}));
+    anyShape0.augment(from_range, std::vector<tensorDimension>{1});
+    CHECK((anyShape0 == Shape{1}));
+    anyShape0.augment(from_range, std::vector<tensorDimension>{2, 3});
+    CHECK((anyShape0 == Shape{1, 2, 3}));
+    anyShape0.augment(from_range, std::vector<tensorDimension>{4, 5, 6});
+    CHECK((anyShape0 == Shape{1, 2, 3, 4, 5, 6}));
+
+    AnyShape<10> anyShape4{1, 2, 3, 4};
+    anyShape4.augment(from_range, std::vector<tensorDimension>{});
+    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
+    anyShape4.augment(from_range, std::vector<tensorDimension>{5, 6, 7, 8, 9, 10});
+    CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+    anyShape4.augment(from_range, std::vector<tensorDimension>{});
+    CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+    CHECK_THROWS(anyShape4.augment(from_range, std::vector<tensorDimension>{1}));
+}
+
+TEST_CASE("AnyShape demote", "[AnyShape]") {
+    {
+        AnyShape<4> anyShape4{1, 2, 3, 4};
+        anyShape4.demote(4);
+        CHECK((anyShape4 == Shape{1, 2, 3, 4}));
+        anyShape4.demote(3);
+        CHECK((anyShape4 == Shape{1, 2, 3}));
+        anyShape4.demote(2);
+        CHECK((anyShape4 == Shape{1, 2}));
+        anyShape4.demote(1);
+        CHECK((anyShape4 == Shape{1}));
+        anyShape4.demote(0);
+        CHECK((anyShape4 == Shape{}));
+    }
+    {
+        AnyShape<4> anyShape4{1, 2, 3, 4};
+        anyShape4.demote(1);
+        CHECK((anyShape4 == Shape{1}));
+        anyShape4.demote(0);
+        CHECK((anyShape4 == Shape{}));
+    }
+    {
+        AnyShape<4> anyShape3{1, 2, 3};
+        CHECK_THROWS(anyShape3.demote(4));
+    }
+    {
+        AnyShape<4> anyShape3{1, 2, 3};
+        CHECK_THROWS(anyShape3.demote(-1));
+    }
+    {
+        AnyShape<4> anyShape4{1, 2, 3, 4};
+        anyShape4.demote(2);
+        CHECK((anyShape4 == Shape{1, 2}));
+        CHECK_THROWS(anyShape4.demote(3));
+    }
+}

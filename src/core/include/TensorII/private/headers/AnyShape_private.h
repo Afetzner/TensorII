@@ -40,7 +40,7 @@ namespace TensorII::Core {
     template <tensorRank maxRank>
     class AnyShape{
         std::array<tensorDimension, maxRank> dimensions;
-        std::optional<tensorRank> currRank;
+        tensorRank currRank;
 
     public:
         constexpr ~AnyShape();
@@ -124,8 +124,8 @@ namespace TensorII::Core {
 
         [[nodiscard]]
         constexpr AnyShapeIterator end() const {
-            if (currRank.has_value() && currRank.value()) {
-                return AnyShapeIterator(dimensions.data() + currRank.value());
+            if (currRank != 0) {
+                return AnyShapeIterator(dimensions.data() + currRank);
             }
             return AnyShapeIterator {dimensions.data()};
         };

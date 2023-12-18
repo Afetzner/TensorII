@@ -2,6 +2,9 @@
 // Created by Amy Fetzner on 12/8/2023.
 //
 
+#ifndef TENSOR_SHAPE_TPP
+#define TENSOR_SHAPE_TPP
+
 #include "TensorII/private/headers/Shape_private.h"
 #include <ranges>
 #include <algorithm>
@@ -158,3 +161,5 @@ namespace TensorII::Core {
         return newShape;
     }
 }
+
+#endif //TENSOR_SHAPE_TPP
