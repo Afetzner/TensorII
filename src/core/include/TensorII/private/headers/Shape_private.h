@@ -49,7 +49,7 @@ namespace TensorII::Core {
 
         constexpr Shape(const tensorDimension (&array)[rank_]); // NOLINT(google-explicit-constructor)
 
-        template<Util::ContainerCompatibleRange<tensorDimension> Range>
+        template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
         constexpr explicit Shape(from_range_t, Range&& range);
 
         template<std::convertible_to<tensorDimension> ... Dims>
@@ -59,7 +59,7 @@ namespace TensorII::Core {
         template <std::convertible_to<tensorDimension> ... Dims>
         constexpr Shape<rank_ + sizeof...(Dims)> augmented(const Dims ... dims) const;
 
-        template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
+        template<tensorRank newRank, Util::SizedContainerCompatibleRange<tensorDimension> Range>
         constexpr Shape<newRank> augmented(from_range_t, Range&& augmentDimensions) const;
 
         template <tensorRank newRank>

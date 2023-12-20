@@ -24,7 +24,7 @@ namespace TensorII::Core {
         explicit Tensor(typename Private::TensorInitializer<DType, shape_>::Array&);
         explicit Tensor(Private::TensorInitializer<DType, shape_>&&);
 
-        template <Util::ContainerCompatibleRange<DType> Range>
+        template <Util::SizedContainerCompatibleRange<DType> Range>
         explicit Tensor(from_range_t, Range&&);
 
         Tensor(const Tensor&) = delete;
@@ -72,7 +72,7 @@ namespace TensorII::Core {
         Tensor(DType value); // NOLINT(google-explicit-constructor)
         explicit Tensor(Private::TensorInitializer<DType, Shape<0>{}>&& initializer);
 
-        template <Util::ContainerCompatibleRange<DType> Range>
+        template <Util::SizedContainerCompatibleRange<DType> Range>
         explicit Tensor(from_range_t, Range&&);
 
         Tensor(const Tensor&);

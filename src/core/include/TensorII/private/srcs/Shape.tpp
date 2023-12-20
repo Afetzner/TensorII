@@ -27,7 +27,7 @@ namespace TensorII::Core {
     {}
 
     template<tensorRank rank_>
-    template<Util::ContainerCompatibleRange<tensorDimension> Range>
+    template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
     constexpr Shape<rank_>::Shape(from_range_t, Range&& range)
     : dimensions{} {
         if (std::ranges::size(range) != rank_){
@@ -53,7 +53,7 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
+    template<tensorRank newRank, Util::SizedContainerCompatibleRange<tensorDimension> Range>
     constexpr Shape<newRank> Shape<rank_>::augmented(from_range_t, Range&& augmentDimensions) const {
         if (rank_ + std::ranges::size(augmentDimensions) != newRank){
             throw std::range_error("Length of range does not match declared dimensions");

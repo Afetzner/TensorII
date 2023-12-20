@@ -9,8 +9,9 @@
 
 namespace TensorII::Core::Util {
     template< class R, class T >
-    concept ContainerCompatibleRange =
+    concept SizedContainerCompatibleRange =
             std::ranges::input_range<R> &&
+            std::ranges::sized_range<R> &&
             std::convertible_to<std::ranges::range_reference_t<R>, T>;
 }
 #endif //TENSOR_CONCEPTUTIL_H

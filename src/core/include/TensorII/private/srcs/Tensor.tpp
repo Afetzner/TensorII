@@ -30,7 +30,7 @@ namespace TensorII::Core {
     {}
 
     template<Scalar DType, auto shape_, typename Allocator>
-    template<Util::ContainerCompatibleRange<DType> Range>
+    template<Util::SizedContainerCompatibleRange<DType> Range>
     Tensor<DType, shape_, Allocator>::Tensor(from_range_t, Range&& range) {
         std::ranges::copy_n(range.being(), size(), data_->begin());
     }

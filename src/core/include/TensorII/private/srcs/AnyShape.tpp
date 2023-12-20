@@ -44,7 +44,7 @@ namespace TensorII::Core {
     }
 
     template<tensorRank maxRank>
-    template<Util::ContainerCompatibleRange<tensorDimension> Range>
+    template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
     constexpr AnyShape<maxRank>::AnyShape(from_range_t, Range&& range)
     {
         tensorRank n_new = std::ranges::size(range);
@@ -57,7 +57,7 @@ namespace TensorII::Core {
     }
 
     template<tensorRank maxRank>
-    template<Util::ContainerCompatibleRange<tensorDimension> Range>
+    template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
     AnyShape<maxRank>& AnyShape<maxRank>::emplace(from_range_t, Range&& range)
     {
        tensorRank n_new = std::ranges::size(range);
@@ -118,7 +118,7 @@ namespace TensorII::Core {
     }
 
     template<tensorRank maxRank>
-    template<Util::ContainerCompatibleRange<tensorDimension> Range>
+    template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
     constexpr AnyShape<maxRank> AnyShape<maxRank>::augmented(from_range_t, Range&& range) const
     {
         tensorRank n_old = currRank;
@@ -170,7 +170,7 @@ namespace TensorII::Core {
     }
 
     template<tensorRank maxRank>
-    template<Util::ContainerCompatibleRange<tensorDimension> Range>
+    template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
     void AnyShape<maxRank>::augment(from_range_t, Range&& range) {
         tensorRank n_old = currRank;
         tensorRank n_new = std::ranges::size(range);

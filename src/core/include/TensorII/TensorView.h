@@ -12,16 +12,35 @@
 #include "TensorII/private/TensorIndex.h"
 
 namespace TensorII::Core {
-    template<Scalar DType, auto shape, auto underlyingShape>
+    template<Scalar DType, auto underlyingShape>
     class TensorView {
-        Tensor<DType, underlyingShape>* source;
-        std::array<IndexTriple, shape.rank()> indecies;
+        static constexpr tensorRank maxRank = underlyingShape.rank();
+        Tensor<DType, underlyingShape>& source;
+        AnyShape<maxRank> apparentShape;
+        const tensorRank index;
+        std::array<IndexTriple, maxRank> indecies;
 
     public:
-        constexpr TensorView(Tensor<DType, underlyingShape>* source) : source(source) {};
+        constexpr TensorView(Tensor<DType, underlyingShape>& source); // NOLINT(google-explicit-constructor)
 
-        void operator[](IndexTriple triple);
+        template <std::convertible_to<IndexTriple> ... Triples>
+        requires (sizeof...(Triples) <= underlyingShape.rank())
+        constexpr explicit TensorView(Tensor<DType, underlyingShape>& source, const Triples& ... triples);
+
+        template <typename Range>
+        requires (Util::SizedContainerCompatibleRange<Range, IndexTriple>)
+        constexpr TensorView(Tensor<DType, underlyingShape>& source, from_range_t, Range&& range)
+        requires (std::ranges::size(range) <= underlyingShape.rank());
+
+        constexpr auto operator[](IndexTriple triple) const;
     };
+
+
+
+    template<Scalar DType, auto shape>
+    TensorView(Tensor<DType, shape>) -> TensorView<DType, shape>;
 }
 
 #endif //TENSOR_TENSORVIEW_H
+
+#include "private/srcs/TensorView.tpp"

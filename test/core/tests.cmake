@@ -3,4 +3,5 @@ set(SOURCES
         Tensor_test.cpp
         TensorIndex_test.cpp
         AnyShape_test.cpp
+        TensorView_test.cpp
         )
