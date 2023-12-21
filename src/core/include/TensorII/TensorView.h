@@ -20,6 +20,8 @@ namespace TensorII::Core {
         const tensorRank index;
         std::array<IndexTriple, maxRank> indecies;
 
+        constexpr TensorView(const TensorView& other, IndexTriple triple);
+
     public:
         constexpr TensorView(Tensor<DType, underlyingShape>& source); // NOLINT(google-explicit-constructor)
 
@@ -33,9 +35,9 @@ namespace TensorII::Core {
         requires (std::ranges::size(range) <= underlyingShape.rank());
 
         constexpr auto operator[](IndexTriple triple) const;
+
+        const AnyShape<maxRank>& shape() { return apparentShape; }
     };
-
-
 
     template<Scalar DType, auto shape>
     TensorView(Tensor<DType, shape>) -> TensorView<DType, shape>;

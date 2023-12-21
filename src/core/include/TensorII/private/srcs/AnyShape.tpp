@@ -252,7 +252,7 @@ namespace TensorII::Core {
 
     template<tensorRank maxRank>
     constexpr tensorDimension AnyShape<maxRank>::operator[](tensorRank i) const {
-        if (i < 0 || i >= currRank){
+        if (i >= currRank){
             throw std::range_error("Index out of range");
         }
         return (*shape<maxRank>())[i];
