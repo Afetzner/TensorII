@@ -9,7 +9,7 @@
 #include "TensorII/Types.h"
 #include "optional"
 
-namespace TensorII::Core{
+namespace TensorII::Core::Private{
 
     class IndexTriple {
         std::optional<tensorIndex> single_;

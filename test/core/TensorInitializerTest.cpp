@@ -2,7 +2,7 @@
 // Created by Amy Fetzner on 12/21/2023.
 //
 
-#include "TensorII/TensorInitializer.h"
+#include "TensorII/private/TensorInitializer.h"
 #include "Catch2/catch_test_macros.hpp"
 
 using namespace TensorII::Core;

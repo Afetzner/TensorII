@@ -12,6 +12,8 @@
 #include "TensorII/private/TensorIndex.h"
 
 namespace TensorII::Core {
+    using namespace Private;
+
     template<Scalar DType, auto underlyingShape>
     class TensorView {
         static constexpr tensorRank maxRank = underlyingShape.rank();
@@ -45,4 +47,4 @@ namespace TensorII::Core {
 
 #endif //TENSOR_TENSORVIEW_H
 
-#include "private/srcs/TensorView.tpp"
+#include "private/templates/TensorView.tpp"

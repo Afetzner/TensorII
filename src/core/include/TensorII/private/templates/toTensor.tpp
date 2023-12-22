@@ -2,10 +2,10 @@
 // Created by Amy Fetzner on 12/2/2023.
 //
 
-#ifndef TENSOR_TOTENSOR_H
-#define TENSOR_TOTENSOR_H
+#ifndef TENSOR_TOTENSOR_TPP
+#define TENSOR_TOTENSOR_TPP
 
-#include "TensorII/private/headers/Tensor_private.h"
+#include "TensorII/Tensor.h"
 
 namespace TensorII::Core {
     //region toTensor
@@ -59,4 +59,4 @@ namespace TensorII::Core {
     //endregion toTensor
 }
 
-#endif //TENSOR_TOTENSOR_H
+#endif //TENSOR_TOTENSOR_TPP

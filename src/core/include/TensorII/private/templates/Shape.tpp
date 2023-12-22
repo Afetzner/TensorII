@@ -5,7 +5,7 @@
 #ifndef TENSOR_SHAPE_TPP
 #define TENSOR_SHAPE_TPP
 
-#include "TensorII/private/headers/Shape_private.h"
+#include "TensorII/Shape.h"
 #include <ranges>
 #include <algorithm>
 

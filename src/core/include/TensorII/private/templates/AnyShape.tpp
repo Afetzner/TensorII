@@ -6,7 +6,7 @@
 
 #include <any>
 #include <algorithm>
-#include "TensorII/private/headers/AnyShape_private.h"
+#include "TensorII/AnyShape.h"
 
 namespace TensorII::Core {
 

@@ -5,7 +5,7 @@
 #ifndef TENSOR_TENSOR_TPP
 #define TENSOR_TENSOR_TPP
 
-#include "TensorII/private/headers/Tensor_private.h"
+#include "TensorII/Tensor.h"
 
 namespace TensorII::Core {
 
