@@ -9,77 +9,83 @@
 
 namespace TensorII::Core {
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    Tensor<DType, shape_, Allocator>::Tensor() {
-        data_ = std::make_unique<Array, ArrayDeleter>();
-    }
-
-    template<Scalar DType, auto shape_, typename Allocator>
-    Tensor<DType, shape_, Allocator>::Tensor(typename Private::TensorInitializer<DType, shape_>::Array &array) {
-        static_assert(sizeof(Array) == sizeof(DType) * size(),
-                      "Mismatch of sizeof(DType[N]) and std::array<DType, N>, cursed compiler?");
-        Allocator allocator;
-        Array *array_p = new(allocator.allocate(size())) Array;
-        data_ = std::unique_ptr<Array, ArrayDeleter>(array_p);
-        memcpy_s(data_.get(), size_in_bytes(), array, size_in_bytes());
-    }
-
-    template<Scalar DType, auto shape_, typename Allocator>
-    Tensor<DType, shape_, Allocator>::Tensor(Private::TensorInitializer<DType, shape_> &&initializer)
-    : Tensor<DType, shape_>::Tensor(initializer.values)
+    template<Scalar DType, auto shape_>
+    constexpr Tensor<DType, shape_>::Tensor()
+    : data_ {}
     {}
 
-    template<Scalar DType, auto shape_, typename Allocator>
+    template<Scalar DType, auto shape_>
+    constexpr Tensor<DType, shape_>::Tensor(typename Private::TensorInitializer<DType, shape_>::Array &array) {
+        static_assert(sizeof(Array) == sizeof(decltype(array))); // assert c-array same size as std::array
+        if (!std::is_constant_evaluated()){
+            memmove_s(data_.data(), size_in_bytes(), array, size_in_bytes());
+            return;
+        }
+    }
+
+    template<Scalar DType, auto shape_>
+    constexpr Tensor<DType, shape_>::Tensor(Private::TensorInitializer<DType, shape_> &&initializer)
+            : Tensor<DType, shape_>::Tensor(from_range, initializer)
+    {}
+
+    template<Scalar DType, auto shape_>
     template<Util::SizedContainerCompatibleRange<DType> Range>
-    Tensor<DType, shape_, Allocator>::Tensor(from_range_t, Range&& range) {
-        std::ranges::copy_n(range.being(), size(), data_->begin());
+    constexpr Tensor<DType, shape_>::Tensor(from_range_t, Range && range) {
+        std::ranges::copy_n(range.begin(), size(), data_.begin());
     }
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    Tensor<DType, shape_, Allocator>::Tensor(Tensor && other) noexcept
-    : data_(std::exchange(other.cstring, nullptr))
-    {}
+    template<Scalar DType, auto shape_>
+    constexpr Tensor<DType, shape_>::Tensor(Tensor && other) noexcept
+    : data_{}
+    {
+        if (!std::is_constant_evaluated()){
+            memmove_s(data_.data(), size_in_bytes(), other.data(), other.size_in_bytes());
+            return;
+        }
+        for(size_t i = 0; i < Array::size(); i++){
+            data_[i] = other.data_[i];
+        }
+    }
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    Tensor<DType, shape_, Allocator>& Tensor<DType, shape_, Allocator>::operator=(Tensor && other) noexcept {
-        std::swap(data_, other.data_);
+    template<Scalar DType, auto shape_>
+    constexpr Tensor<DType, shape_>& Tensor<DType, shape_>::operator=(Tensor && other) noexcept {
+        if (!std::is_constant_evaluated()){
+            memmove_s(data_.data(), size_in_bytes(), other.data(), other.size_in_bytes());
+            return *this;
+        }
+        for(size_t i = 0; i < Array::size(); i++){
+            data_[i] = other.data_[i];
+        }
         return *this;
     }
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    constexpr Shape<shape_.rank()> Tensor<DType, shape_, Allocator>::shape() {
+    template<Scalar DType, auto shape_>
+    constexpr Shape<shape_.rank()> Tensor<DType, shape_>::shape() {
         return shape_;
     }
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    constexpr tensorSize Tensor<DType, shape_, Allocator>::size() noexcept {
-        return shape_.size();
+    template<Scalar DType, auto shape_>
+    constexpr tensorSize Tensor<DType, shape_>::size() noexcept {
+        return shape_.n_elems();
     }
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    constexpr tensorSize Tensor<DType, shape_, Allocator>::size_in_bytes() noexcept {
+    template<Scalar DType, auto shape_>
+    constexpr tensorSize Tensor<DType, shape_>::size_in_bytes() noexcept {
         return size() * sizeof(DType);
     }
 
-
-    template<Scalar DType, auto shape, typename Allocator>
-    void Tensor<DType, shape, Allocator>::ArrayDeleter::operator()(std::array<DType, size()> *a) {
-        Allocator allocator;
-        allocator.deallocate((DType *) a, size());
+    template<Scalar DType, auto shape_>
+    constexpr DType *Tensor<DType, shape_>::data() noexcept {
+        return data_.data();
     }
 
-    template<Scalar DType, auto shape_, typename Allocator>
-    constexpr DType *Tensor<DType, shape_, Allocator>::data() noexcept {
-        return data_->data();
-    }
-
-    template<Scalar DType, auto shape_, typename Allocator>
-    constexpr const DType *Tensor<DType, shape_, Allocator>::data() const noexcept {
-        return data_->data();
+    template<Scalar DType, auto shape_>
+    constexpr const DType *Tensor<DType, shape_>::data() const noexcept {
+        return data_.data();
     }
 
     template<auto newShape, auto oldShape, Scalar DType>
-    requires (oldShape.size() == newShape.size()
+    requires (oldShape.n_elems() == newShape.n_elems()
               && oldShape.isValidExplicit()
               && newShape.isValidExplicit())
     Tensor<DType, newShape> &
@@ -88,7 +94,7 @@ namespace TensorII::Core {
     }
 
     template<Shape newShape, Shape oldShape, Scalar DType>
-    requires (oldShape.size() == newShape.size()
+    requires (oldShape.n_elems() == newShape.n_elems()
               && oldShape.isValidExplicit()
               && newShape.isValidImplicit())
     Tensor<DType, deduceShape(oldShape, newShape)>&
@@ -97,41 +103,48 @@ namespace TensorII::Core {
     }
 
 
-    //region 0D tensor specialization
-    template<Scalar DType, typename Allocator>
-    Tensor<DType, Shape<0>{}, Allocator>::Tensor(DType value)
-    : data_(value)
-    {}
-
-    template<Scalar DType, typename Allocator>
-    Tensor<DType, Shape<0>{}, Allocator>::Tensor(Private::TensorInitializer<DType, Shape<0>{}, 0> &&initializer)
-    : Tensor<DType, Shape<0>{}, Allocator>::Tensor(initializer.value)
-    {}
-
-    template<Scalar DType, typename Allocator>
-    constexpr Shape<0> Tensor<DType, Shape<0>{}, Allocator>::shape() noexcept {
-        return Shape<0>{};
-    }
-
-    template<Scalar DType, typename Allocator>
-    constexpr tensorSize Tensor<DType, Shape<0>{}, Allocator>::size() noexcept {
-        return Shape<0>{}.size();
-    }
-
-    template<Scalar DType, typename Allocator>
-    constexpr tensorSize Tensor<DType, Shape<0>{}, Allocator>::size_in_bytes() noexcept {
-        return size() * sizeof(DType);
-    }
-
-    template<Scalar DType, typename Allocator>
-    constexpr DType *Tensor<DType, Shape<0>{}, Allocator>::data() noexcept {
-        return &data_;
-    }
-
-    template<Scalar DType, typename Allocator>
-    constexpr const DType *Tensor<DType, Shape<0>{}, Allocator>::data() const noexcept {
-        return &data_;
-    }
+//    //region 0D tensor specialization
+//    template<Scalar DType>
+//    constexpr Tensor<DType, Shape<0>{}>::Tensor(DType value)
+//    : data_(value)
+//    {}
+//
+//    template<Scalar DType>
+//    constexpr Tensor<DType, Shape<0>{}>::Tensor(Private::TensorInitializer<DType, Shape<0>{}, 0> &&initializer)
+//    : Tensor<DType, Shape<0>{}>::Tensor(initializer.value)
+//    {}
+//
+//
+////    template<Scalar DType>
+////    template<Util::SizedContainerCompatibleRange<DType> Range>
+////    constexpr Tensor<DType, Shape<0>{}>::Tensor(from_range_t, Range&& range) {
+////        data_ = *range.begin();
+////    }
+//
+//    template<Scalar DType>
+//    constexpr Shape<0> Tensor<DType, Shape<0>{}>::shape() noexcept {
+//        return Shape<0>{};
+//    }
+//
+//    template<Scalar DType>
+//    constexpr tensorSize Tensor<DType, Shape<0>{}>::size() noexcept {
+//        return Shape<0>{}.size();
+//    }
+//
+//    template<Scalar DType>
+//    constexpr tensorSize Tensor<DType, Shape<0>{}>::size_in_bytes() noexcept {
+//        return size() * sizeof(DType);
+//    }
+//
+//    template<Scalar DType>
+//    constexpr DType *Tensor<DType, Shape<0>{}>::data() noexcept {
+//        return &data_;
+//    }
+//
+//    template<Scalar DType>
+//    constexpr const DType *Tensor<DType, Shape<0>{}>::data() const noexcept {
+//        return &data_;
+//    }
 }
 
 #endif //TENSOR_TENSOR_TPP

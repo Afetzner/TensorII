@@ -103,7 +103,7 @@ namespace TensorII::Core {
     constexpr tensorRank Shape<rank_>::rank() const { return rank_; }
 
     template<tensorRank rank_>
-    constexpr tensorSize Shape<rank_>::size() const {
+    constexpr tensorSize Shape<rank_>::n_elems() const {
         // Edge case for rank 0
         if (rank_ == 0) { return 1; }
         // Product of all positive dimensions. size of an invalid shape is undefined
@@ -149,8 +149,8 @@ namespace TensorII::Core {
             throw std::runtime_error("Arg 'implicitShape' is not a valid implicit shape");
         }
 
-        const tensorDimension deducedDim = explicitShape.size() / implicitShape.size();
-        const tensorDimension remainder = explicitShape.size() % implicitShape.size();
+        const tensorDimension deducedDim = explicitShape.n_elems() / implicitShape.n_elems();
+        const tensorDimension remainder = explicitShape.n_elems() % implicitShape.n_elems();
         if (remainder != 0) {
             throw std::runtime_error("Cannot deduce shape using incompatible shapes");
         }

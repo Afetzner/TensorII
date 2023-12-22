@@ -391,7 +391,7 @@ TEST_CASE("AnyShape demote", "[AnyShape]") {
     }
 }
 
-TEST_CASE("AnyShape size", "[Shape]"){
+TEST_CASE("AnyShape n_elems", "[Shape]"){
     // Explicit shapes
     STATIC_CHECK(AnyShape<5>{}.size() == 1);
     STATIC_CHECK(AnyShape<5>{5}.size() == 5);

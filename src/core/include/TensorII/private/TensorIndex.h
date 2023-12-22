@@ -6,11 +6,10 @@
 #define TENSOR_TENSORINDEX_H
 
 #include "TensorII/Shape.h"
+#include "TensorII/Types.h"
 #include "optional"
 
 namespace TensorII::Core{
-
-    using tensorIndex = tensorDimension;
 
     class IndexTriple {
         std::optional<tensorIndex> single_;
@@ -25,7 +24,7 @@ namespace TensorII::Core{
         , stop_(std::nullopt)
         , step_(std::nullopt) {};
 
-        constexpr IndexTriple(std::optional<tensorIndex> single = std::nullopt,
+        constexpr IndexTriple(std::optional<tensorIndex> single = std::nullopt, // NOLINT(google-explicit-constructor)
                               std::optional<tensorIndex> start = std::nullopt,
                               std::optional<tensorIndex> step = std::nullopt)
                 : single_(std::nullopt)

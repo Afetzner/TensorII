@@ -9,10 +9,7 @@
 #include "memory"
 
 namespace TensorII::Core {
-    template <Scalar DType>
-    using TensorDefaultAllocator = std::allocator<DType>;
-
-    template <Scalar DType, auto shape_, typename Allocator = TensorDefaultAllocator<DType>>
+    template <Scalar DType, auto shape_>
     class Tensor;
 }
 

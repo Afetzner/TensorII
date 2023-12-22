@@ -8,6 +8,7 @@
 namespace TensorII::Core{
 
     using tensorDimension = long;  // 2^32 = 4G, probably don't need larger
+    using tensorIndex = tensorDimension;
     using tensorRank = size_t;
     using tensorSize = size_t;
 

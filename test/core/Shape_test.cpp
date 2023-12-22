@@ -87,18 +87,18 @@ TEST_CASE("Shape construction, std::array", "[Shape]"){
     static_assert(shape4 == Shape{1, 2, 3, 4});
 }
 
-TEST_CASE("Shape size", "[Shape]"){
+TEST_CASE("Shape n_elems", "[Shape]"){
     // Explicit shapes
-    STATIC_CHECK(Shape{}.size() == 1);
-    STATIC_CHECK(Shape{5}.size() == 5);
-    STATIC_CHECK(Shape{5, 2}.size() == 10);
-    STATIC_CHECK(Shape{5, 1, 1, 2, 3}.size() == 30);
+    STATIC_CHECK(Shape{}.n_elems() == 1);
+    STATIC_CHECK(Shape{5}.n_elems() == 5);
+    STATIC_CHECK(Shape{5, 2}.n_elems() == 10);
+    STATIC_CHECK(Shape{5, 1, 1, 2, 3}.n_elems() == 30);
 
     // Implicit shapes
-    STATIC_CHECK(Shape{-1}.size() == 1);
-    STATIC_CHECK(Shape{-1, 2}.size() == 2);
-    STATIC_CHECK(Shape{2, -1}.size() == 2);
-    STATIC_CHECK(Shape{23, 4, 5, -1, 7}.size() == 3220);
+    STATIC_CHECK(Shape{-1}.n_elems() == 1);
+    STATIC_CHECK(Shape{-1, 2}.n_elems() == 2);
+    STATIC_CHECK(Shape{2, -1}.n_elems() == 2);
+    STATIC_CHECK(Shape{23, 4, 5, -1, 7}.n_elems() == 3220);
 }
 
 TEST_CASE("Shape deduction", "[Shape]"){

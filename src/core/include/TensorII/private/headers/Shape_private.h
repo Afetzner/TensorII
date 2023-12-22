@@ -79,7 +79,7 @@ namespace TensorII::Core {
         constexpr tensorRank rank() const;
 
         [[nodiscard]]
-        constexpr tensorSize size() const;
+        constexpr tensorSize n_elems() const; // Can't be called size, or it will use this for the range funcs
 
         [[nodiscard]]
         constexpr bool isValidExplicit() const;

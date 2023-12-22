@@ -5,7 +5,7 @@
 #ifndef TENSOR_TENSORVIEW_H
 #define TENSOR_TENSORVIEW_H
 
-#include "TensorII/private/headers/Tensor_predecl.h"
+#include "TensorII/private/Tensor_predecl.h"
 #include "TensorII/Shape.h"
 #include "TensorII/AnyShape.h"
 #include "TensorII/TensorDType.h"
