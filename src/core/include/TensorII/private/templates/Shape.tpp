@@ -27,11 +27,13 @@ namespace TensorII::Core {
     {}
 
     template<tensorRank rank_>
-    template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
+    template<Util::ContainerCompatibleRange<tensorDimension> Range>
     constexpr Shape<rank_>::Shape(from_range_t, Range&& range)
     : dimensions{} {
-        if (std::ranges::size(range) != rank_){
-            throw std::range_error("Length of range does not match declared dimensions");
+        if constexpr (std::ranges::sized_range<Range>){
+            if (std::ranges::size(range) != rank_) {
+                throw std::range_error("Length of range does not match declared dimensions");
+            }
         }
         std::ranges::copy_n(range.begin(), rank_, dimensions.begin());
     }
@@ -53,10 +55,12 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    template<tensorRank newRank, Util::SizedContainerCompatibleRange<tensorDimension> Range>
+    template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
     constexpr Shape<newRank> Shape<rank_>::augmented(from_range_t, Range&& augmentDimensions) const {
-        if (rank_ + std::ranges::size(augmentDimensions) != newRank){
-            throw std::range_error("Length of range does not match declared dimensions");
+        if constexpr (std::ranges::sized_range<Range>){
+            if (rank_ + std::ranges::size(augmentDimensions) != newRank) {
+                throw std::range_error("Length of range does not match declared dimensions");
+            }
         }
         Shape<newRank> newShape;
         // Copy old dimensions

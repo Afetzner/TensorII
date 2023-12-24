@@ -21,7 +21,8 @@ namespace TensorII::Core {
     template<Scalar DType, tensorDimension dimension>
     constexpr auto toTensor(const DType (&&array)[dimension]) // -> Tensor<DType, Shape<1>{dimension}, Allocator>
     {
-        return Tensor<DType, Shape<1>{dimension}>(Private::TensorInitializer<DType, Shape<1>{dimension}>(array));
+        constexpr const Shape shape_ = Shape<1>{dimension};
+        return Tensor<DType, shape_>(Private::TensorInitializer<DType, Shape<1>{dimension}>(array));
     }
 
     // 2 dimensions
@@ -30,8 +31,8 @@ namespace TensorII::Core {
             tensorDimension d2>
     constexpr auto toTensor(const DType (&&array)[d1][d2]) // -> Tensor<DType, Shape<2>{d1, d2}, Allocator>
     {
-        constexpr Shape shape = Shape<2>{d1, d2};
-        return Tensor<DType, shape> (Private::TensorInitializer<DType, shape>(array));
+        constexpr const Shape shape_ = Shape < 2 > {d1, d2};
+        return Tensor<DType, shape_> (Private::TensorInitializer<DType, shape_>(array));
     }
 
     // 3 dimensions
@@ -41,8 +42,8 @@ namespace TensorII::Core {
             tensorDimension d3>
     constexpr auto toTensor(const DType (&&array)[d1][d2][d3]) // -> Tensor<DType, Shape<3>{d1, d2, d3}, Allocator>
     {
-        constexpr Shape shape = Shape<3>{d1, d2, d3};
-        return Tensor<DType, shape> (Private::TensorInitializer<DType, shape>(array));
+        constexpr const Shape shape_ = Shape <3> {d1, d2, d3};
+        return Tensor<DType, shape_> (Private::TensorInitializer<DType, shape_>(array));
     }
 
     // 4 dimensions
@@ -53,8 +54,8 @@ namespace TensorII::Core {
             tensorDimension d4>
     constexpr auto toTensor(const DType (&&array)[d1][d2][d3][d4]) // -> Tensor<DType, Shape<4>{d1, d2, d3, d4}, Allocator>
     {
-        constexpr Shape shape = Shape<4>{d1, d2, d3, d4};
-        return Tensor<DType, shape> (Private::TensorInitializer<DType, shape>(array));
+        constexpr const Shape shape_ = Shape <4> {d1, d2, d3, d4};
+        return Tensor<DType, shape_> (Private::TensorInitializer<DType, shape_>(array));
     }
     //endregion toTensor
 }

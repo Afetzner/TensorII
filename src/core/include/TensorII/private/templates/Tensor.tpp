@@ -29,7 +29,7 @@ namespace TensorII::Core {
     {}
 
     template<Scalar DType, auto shape_>
-    template<Util::SizedContainerCompatibleRange<DType> Range>
+    template<Util::ContainerCompatibleRange<DType> Range>
     constexpr Tensor<DType, shape_>::Tensor(from_range_t, Range && range) {
         std::ranges::copy_n(range.begin(), size(), data_.begin());
     }
@@ -60,27 +60,22 @@ namespace TensorII::Core {
     }
 
     template<Scalar DType, auto shape_>
-    constexpr Shape<shape_.rank()> Tensor<DType, shape_>::shape() {
-        return shape_;
-    }
-
-    template<Scalar DType, auto shape_>
-    constexpr tensorSize Tensor<DType, shape_>::size() noexcept {
+    constexpr Tensor<DType, shape_>::size_type Tensor<DType, shape_>::size() noexcept {
         return shape_.n_elems();
     }
 
     template<Scalar DType, auto shape_>
-    constexpr tensorSize Tensor<DType, shape_>::size_in_bytes() noexcept {
+    constexpr Tensor<DType, shape_>::size_type Tensor<DType, shape_>::size_in_bytes() noexcept {
         return size() * sizeof(DType);
     }
 
     template<Scalar DType, auto shape_>
-    constexpr DType *Tensor<DType, shape_>::data() noexcept {
+    constexpr Tensor<DType, shape_>::pointer Tensor<DType, shape_>::data() noexcept {
         return data_.data();
     }
 
     template<Scalar DType, auto shape_>
-    constexpr const DType *Tensor<DType, shape_>::data() const noexcept {
+    constexpr Tensor<DType, shape_>::const_pointer Tensor<DType, shape_>::data() const noexcept {
         return data_.data();
     }
 
@@ -101,50 +96,6 @@ namespace TensorII::Core {
     reshape(Tensor <DType, oldShape>& t) {
         return t;
     }
-
-
-//    //region 0D tensor specialization
-//    template<Scalar DType>
-//    constexpr Tensor<DType, Shape<0>{}>::Tensor(DType value)
-//    : data_(value)
-//    {}
-//
-//    template<Scalar DType>
-//    constexpr Tensor<DType, Shape<0>{}>::Tensor(Private::TensorInitializer<DType, Shape<0>{}, 0> &&initializer)
-//    : Tensor<DType, Shape<0>{}>::Tensor(initializer.value)
-//    {}
-//
-//
-////    template<Scalar DType>
-////    template<Util::SizedContainerCompatibleRange<DType> Range>
-////    constexpr Tensor<DType, Shape<0>{}>::Tensor(from_range_t, Range&& range) {
-////        data_ = *range.begin();
-////    }
-//
-//    template<Scalar DType>
-//    constexpr Shape<0> Tensor<DType, Shape<0>{}>::shape() noexcept {
-//        return Shape<0>{};
-//    }
-//
-//    template<Scalar DType>
-//    constexpr tensorSize Tensor<DType, Shape<0>{}>::size() noexcept {
-//        return Shape<0>{}.size();
-//    }
-//
-//    template<Scalar DType>
-//    constexpr tensorSize Tensor<DType, Shape<0>{}>::size_in_bytes() noexcept {
-//        return size() * sizeof(DType);
-//    }
-//
-//    template<Scalar DType>
-//    constexpr DType *Tensor<DType, Shape<0>{}>::data() noexcept {
-//        return &data_;
-//    }
-//
-//    template<Scalar DType>
-//    constexpr const DType *Tensor<DType, Shape<0>{}>::data() const noexcept {
-//        return &data_;
-//    }
 }
 
 #endif //TENSOR_TENSOR_TPP

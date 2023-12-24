@@ -18,13 +18,21 @@
 namespace TensorII::Core {
 
     template <Scalar DType, auto shape_>
-    class Tensor{
+    class Tensor {
     public:
+        using value_type = DType;
+        using size_type = tensorSize;
+        using difference_type = std::ptrdiff_t;
+        using reference = value_type&;
+        using const_reference = const value_type&;
+        using pointer = value_type*;
+        using const_pointer = const value_type*;
+
         constexpr Tensor();
         explicit constexpr Tensor(typename Private::TensorInitializer<DType, shape_>::Array&);
         explicit constexpr Tensor(Private::TensorInitializer<DType, shape_>&&);
 
-        template <Util::SizedContainerCompatibleRange<DType> Range>
+        template <Util::ContainerCompatibleRange<DType> Range>
         constexpr explicit Tensor(from_range_t, Range&&);
 
         // Copy not allowed
@@ -34,13 +42,13 @@ namespace TensorII::Core {
         constexpr Tensor(Tensor&&) noexcept;
         constexpr Tensor& operator=(Tensor&&) noexcept;
 
-        constexpr Shape<shape_.rank()> shape();
+        static constexpr Shape<shape_.rank()> shape() noexcept { return shape_; }
 
-        static constexpr tensorSize size() noexcept;
-        static constexpr tensorSize size_in_bytes() noexcept;
+        static constexpr size_type size() noexcept;
+        static constexpr size_type size_in_bytes() noexcept;
 
-        constexpr DType* data() noexcept;
-        constexpr const DType* data() const noexcept;
+        constexpr pointer data() noexcept;
+        constexpr const_pointer data() const noexcept;
 
     private:
         using Array = std::array<DType, size()>;

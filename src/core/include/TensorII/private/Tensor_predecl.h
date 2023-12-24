@@ -11,6 +11,16 @@
 namespace TensorII::Core {
     template <Scalar DType, auto shape_>
     class Tensor;
+
+    namespace Private {
+        template<template<Scalar, auto> class Template, Scalar DType, auto shape>
+        void derived_from_tensor_specialization_impl(const Template<DType, shape> &);
+
+        template <class T, template <Scalar, auto> class DerivedFromTensor>
+        concept derived_from_tensor_specialization_of = requires(const T& t) {
+            Private::derived_from_tensor_specialization_impl<DerivedFromTensor>(t);
+        };
+    }
 }
 
 #endif //TENSOR_TENSOR_PREDECL_H

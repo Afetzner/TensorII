@@ -19,28 +19,9 @@ namespace TensorII::Core {
 
     template<tensorRank> struct Shape;
 
-    class ShapeIterator {
-    public:
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type        = tensorDimension;
-        using difference_type   = std::ptrdiff_t;
-        using pointer           = tensorDimension *;
-        using reference         = tensorDimension &;
-
-        explicit constexpr ShapeIterator(tensorDimension* ptr = nullptr) : m_ptr(ptr) {}
-        reference operator*() const { return *m_ptr; }
-        pointer operator->() { return m_ptr; }
-        ShapeIterator& operator++() { m_ptr++; return *this; }
-        ShapeIterator operator++(int) { ShapeIterator tmp = *this; ++(*this); return tmp; } // NOLINT(cert-dcl21-cpp)
-        friend bool operator== (const ShapeIterator& a, const ShapeIterator& b) { return a.m_ptr == b.m_ptr; };
-        friend bool operator!= (const ShapeIterator& a, const ShapeIterator& b) { return a.m_ptr != b.m_ptr; };
-    private:
-        pointer m_ptr;
-    };
-
     template <tensorRank rank_>
     struct Shape {
-        std::array<tensorDimension, std::max(rank_, 1U)> dimensions;
+        std::array<tensorDimension, std::max(rank_, (tensorRank)1)> dimensions;
 
         constexpr Shape();
         constexpr ~Shape() = default;
@@ -49,7 +30,7 @@ namespace TensorII::Core {
 
         constexpr Shape(const tensorDimension (&array)[rank_]); // NOLINT(google-explicit-constructor)
 
-        template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
+        template<Util::ContainerCompatibleRange<tensorDimension> Range>
         constexpr explicit Shape(from_range_t, Range&& range);
 
         template<std::convertible_to<tensorDimension> ... Dims>
@@ -59,7 +40,7 @@ namespace TensorII::Core {
         template <std::convertible_to<tensorDimension> ... Dims>
         constexpr Shape<rank_ + sizeof...(Dims)> augmented(const Dims ... dims) const;
 
-        template<tensorRank newRank, Util::SizedContainerCompatibleRange<tensorDimension> Range>
+        template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
         constexpr Shape<newRank> augmented(from_range_t, Range&& augmentDimensions) const;
 
         template <tensorRank newRank>
@@ -79,6 +60,9 @@ namespace TensorII::Core {
         constexpr tensorRank rank() const;
 
         [[nodiscard]]
+        constexpr tensorSize size() const { return rank_; };
+
+        [[nodiscard]]
         constexpr tensorSize n_elems() const; // Can't be called size, or it will use this for the range funcs
 
         [[nodiscard]]
@@ -90,13 +74,32 @@ namespace TensorII::Core {
         [[nodiscard]]
         constexpr bool isValid() const;
 
-        [[nodiscard]]
-        constexpr ShapeIterator begin() const { return ShapeIterator{dimensions.data()}; }
+        class Iterator {
+        public:
+            using iterator_category = std::random_access_iterator_tag;
+            using value_type        = tensorDimension;
+            using difference_type   = std::ptrdiff_t;
+            using pointer           = const tensorDimension *;
+            using reference         = const tensorDimension &;
+
+            explicit constexpr Iterator(const tensorDimension* ptr = nullptr) : m_ptr(ptr) {}
+            constexpr reference operator*() const { return *m_ptr; }
+            constexpr pointer operator->() { return m_ptr; }
+            constexpr Iterator& operator++() { m_ptr++; return *this; }
+            constexpr Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; } // NOLINT(cert-dcl21-cpp)
+            constexpr friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; };
+            constexpr friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; };
+        private:
+            pointer m_ptr;
+        };
 
         [[nodiscard]]
-        constexpr ShapeIterator end() const {
-            if (rank_ != 0) { return ShapeIterator{dimensions.data() + dimensions.size()}; }
-            return ShapeIterator{dimensions.data()};
+        constexpr Iterator begin() const { return Iterator{dimensions.data()}; }
+
+        [[nodiscard]]
+        constexpr Iterator end() const {
+            if (rank_ != 0) { return Iterator{dimensions.data() + dimensions.size()}; }
+            return Iterator{dimensions.data()};
         }
     };
 
