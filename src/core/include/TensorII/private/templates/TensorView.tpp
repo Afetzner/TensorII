@@ -12,28 +12,28 @@
 
 namespace TensorII::Core {
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape>
     constexpr TensorView<UnderlyingTensor, apparentShape>::TensorView(element_type* source)
         : source(source)
     {}
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape>
     constexpr TensorView<UnderlyingTensor, apparentShape>::TensorView(Tensor<element_type, apparentShape> &source)
     requires(apparentShape == source.shape())
         : source(source.data())
     {}
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape>
-    constexpr TensorView<UnderlyingTensor, Shape(from_range, apparentShape | std::ranges::views::drop(1))>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape>
+    constexpr TensorView<UnderlyingTensor, Shape<TensorView<UnderlyingTensor, apparentShape>::rank -1>(from_range, apparentShape | std::ranges::views::drop(1))>
     TensorView<UnderlyingTensor, apparentShape>::operator[](tensorIndex idx) const
     {
-        constexpr Shape ShapeRemaining = {from_range, apparentShape | std::ranges::views::drop(1)};
+        constexpr Shape ShapeRemaining = Shape<rank - 1>{from_range, apparentShape | std::ranges::views::drop(1)};
         using Result = TensorView<UnderlyingTensor, ShapeRemaining>;
         size_t true_idx = idx * ShapeRemaining.n_elems;
         return Result(&source[true_idx]);
     }
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape>
     constexpr auto //IndexedTensorView<UnderlyingTensor, apparentShape, 1>
     TensorView<UnderlyingTensor, apparentShape>::operator[](IndexTriple triple) const {
         // Index like tensor[N],
@@ -45,7 +45,7 @@ namespace TensorII::Core {
         else if (triple.is_empty()) {
             constexpr Shape newShape = apparentShape;
 
-            IndexedTensorView<UnderlyingTensor, newShape, 1>();
+            IndexedTensorView<UnderlyingTensor, newShape, /* 1 */ 0>(*this);
         }
 
         // Other index, like tensor[{1}], tensor[{1, 2}], tensor[{1, 2, 3}]

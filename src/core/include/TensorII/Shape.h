@@ -57,10 +57,10 @@ namespace TensorII::Core {
         constexpr tensorDimension operator[](tensorRank i) const;
 
         [[nodiscard]]
-        constexpr tensorRank rank() const;
+        constexpr tensorRank rank() const noexcept { return rank_; };
 
         [[nodiscard]]
-        constexpr tensorSize size() const { return rank_; };
+        constexpr tensorSize size() const noexcept { return rank_; };
 
         [[nodiscard]]
         constexpr tensorSize n_elems() const; // Can't be called size, or it will use this for the range funcs
@@ -111,6 +111,15 @@ namespace TensorII::Core {
 
     template<tensorRank N>
     Shape(const tensorDimension (&array)[N]) -> Shape<N>;
+
+    namespace Private {
+        template<template<tensorRank> class Template, tensorRank Rank>
+        void derived_from_shape_specialization_impl(const Template<Rank> &);
+    }
+    template <class T>
+    concept is_shape = requires(const T& t) {
+        Private::derived_from_shape_specialization_impl<Shape>(t);
+    };
 
     template<tensorRank explicitRank, tensorRank implicitRank>
     constexpr Shape<implicitRank> deduceShape(const Shape<explicitRank>& explicitShape, const Shape<implicitRank>& implicitShape);

@@ -14,12 +14,8 @@
 #include "TensorII/private/TensorIndex.h"
 
 namespace TensorII::Core {
-    using namespace Private;
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape, size_t index>
-    class IndexedTensorView;
-
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape>
+    template<Private::derived_from_tensor UnderlyingTensor, auto apparentShape>
     class TensorView {
     public:
         using element_type = UnderlyingTensor::value_type;
@@ -45,7 +41,7 @@ namespace TensorII::Core {
         operator[](tensorIndex idx) const;
 
         constexpr auto // IndexedTensorView<UnderlyingTensor, apparentShape, 1>
-        operator[](IndexTriple triple) const;
+        operator[](Private::IndexTriple triple) const;
 
         AnyShape<rank> shape() { return apparentShape; }
     };

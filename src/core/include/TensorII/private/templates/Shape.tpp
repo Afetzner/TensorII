@@ -104,9 +104,6 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    constexpr tensorRank Shape<rank_>::rank() const { return rank_; }
-
-    template<tensorRank rank_>
     constexpr tensorSize Shape<rank_>::n_elems() const {
         // Edge case for rank 0
         if (rank_ == 0) { return 1; }

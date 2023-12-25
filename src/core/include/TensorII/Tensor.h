@@ -14,10 +14,12 @@
 #include "TensorII/TensorDType.h"
 #include "TensorII/private/TensorInitializer.h"
 #include "TensorII/private/TensorIndex.h"
+#include "TensorII/private/ConceptUtil.h"
 
 namespace TensorII::Core {
 
     template <Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     class Tensor {
     public:
         using value_type = DType;
@@ -42,6 +44,7 @@ namespace TensorII::Core {
         constexpr Tensor(Tensor&&) noexcept;
         constexpr Tensor& operator=(Tensor&&) noexcept;
 
+        static constexpr tensorRank rank() noexcept { return shape_.rank(); }
         static constexpr Shape<shape_.rank()> shape() noexcept { return shape_; }
 
         static constexpr size_type size() noexcept;
@@ -68,7 +71,6 @@ namespace TensorII::Core {
               && newShape.isValidImplicit())
     constexpr Tensor<DType, deduceShape(oldShape, newShape)>&
     reshape(Tensor<DType, oldShape>& t);
-
 } // TensorII::Core
 
 #endif //TENSOR_TENSOR_H

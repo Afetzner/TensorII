@@ -7,18 +7,24 @@
 
 namespace TensorII::Core {
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape, size_t index>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape, size_t index>
     constexpr IndexedTensorView<UnderlyingTensor, apparentShape, index>::IndexedTensorView(
-            Tensor<element_type, apparentShape>& source)
+            IndexedTensorView::pointer source)
+    {}
+
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape, size_t index>
+    constexpr IndexedTensorView<UnderlyingTensor, apparentShape, index>::IndexedTensorView(
+            const Tensor<element_type, apparentShape>& source)
     requires(apparentShape == underlyingShape && index == 0)
     {}
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape, size_t index>
-    constexpr IndexedTensorView<UnderlyingTensor, apparentShape, index>::IndexedTensorView(IndexedTensorView::pointer source)
-            : TensorView<UnderlyingTensor, apparentShape>(source)
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape, size_t index>
+    constexpr IndexedTensorView<UnderlyingTensor, apparentShape, index>::IndexedTensorView(
+            const TensorView<Tensor<element_type, apparentShape>, apparentShape> &source)
+    requires(apparentShape == underlyingShape && index == 0)
     {}
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape, size_t index>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape, size_t index>
     constexpr auto IndexedTensorView<UnderlyingTensor, apparentShape, index>::operator[](IndexTriple triple) const {
         return nullptr;
     }

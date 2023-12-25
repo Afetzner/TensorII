@@ -15,8 +15,10 @@
 namespace TensorII::Core {
     using namespace Private;
 
-    template<derived_from_tensor_specialization_of<Tensor> UnderlyingTensor, auto apparentShape, size_t index>
+    template<derived_from_tensor UnderlyingTensor, auto apparentShape, size_t index>
     class IndexedTensorView {
+        template <derived_from_tensor, auto, size_t> friend class IndexedTensorView;
+
     public:
         using element_type = UnderlyingTensor::value_type;
         using value_type = std::remove_cv_t<typename UnderlyingTensor::value_type>;
@@ -27,14 +29,18 @@ namespace TensorII::Core {
         using pointer = value_type*;
         using const_pointer = const value_type*;
 
-        static constexpr Shape underlyingShape = UnderlyingTensor::shape;
+        static constexpr Shape<UnderlyingTensor::rank()> underlyingShape = UnderlyingTensor::shape();
 
     private:
-        IndexedTensorView underlyingView;
+        TensorView<UnderlyingTensor, UnderlyingTensor::shape()> underlyingView;
         std::array<IndexTriple, index> indecies;
 
-        constexpr IndexedTensorView(Tensor<element_type, apparentShape>& source)  // NOLINT(google-explicit-constructor)
+        constexpr IndexedTensorView(const Tensor<element_type, apparentShape>& source)  // NOLINT(google-explicit-constructor)
         requires(apparentShape == underlyingShape && index == 0);
+
+        constexpr IndexedTensorView(const TensorView<Tensor<element_type, apparentShape>, apparentShape>& source)  // NOLINT(google-explicit-constructor)
+        requires(apparentShape == underlyingShape && index == 0);
+
 
         constexpr explicit IndexedTensorView(pointer source);
 

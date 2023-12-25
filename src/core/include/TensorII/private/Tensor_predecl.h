@@ -6,19 +6,21 @@
 #define TENSOR_TENSOR_PREDECL_H
 
 #include "TensorII/TensorDType.h"
+#include "TensorII/Shape.h"
 #include "memory"
 
 namespace TensorII::Core {
     template <Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     class Tensor;
 
     namespace Private {
-        template<template<Scalar, auto> class Template, Scalar DType, auto shape>
-        void derived_from_tensor_specialization_impl(const Template<DType, shape> &);
+        template<Scalar DType, auto shape>
+        void derived_from_tensor_impl(const Tensor<DType, shape> &);
 
-        template <class T, template <Scalar, auto> class DerivedFromTensor>
-        concept derived_from_tensor_specialization_of = requires(const T& t) {
-            Private::derived_from_tensor_specialization_impl<DerivedFromTensor>(t);
+        template <class T>
+        concept derived_from_tensor = requires(const T& t) {
+            Private::derived_from_tensor_impl(t);
         };
     }
 }

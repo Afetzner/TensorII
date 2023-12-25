@@ -10,11 +10,13 @@
 namespace TensorII::Core {
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::Tensor()
     : data_ {}
     {}
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::Tensor(typename Private::TensorInitializer<DType, shape_>::Array &array) {
         static_assert(sizeof(Array) == sizeof(decltype(array))); // assert c-array same size as std::array
         if (!std::is_constant_evaluated()){
@@ -24,17 +26,20 @@ namespace TensorII::Core {
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::Tensor(Private::TensorInitializer<DType, shape_> &&initializer)
             : Tensor<DType, shape_>::Tensor(from_range, initializer)
     {}
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     template<Util::ContainerCompatibleRange<DType> Range>
     constexpr Tensor<DType, shape_>::Tensor(from_range_t, Range && range) {
         std::ranges::copy_n(range.begin(), size(), data_.begin());
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::Tensor(Tensor && other) noexcept
     : data_{}
     {
@@ -48,6 +53,7 @@ namespace TensorII::Core {
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>& Tensor<DType, shape_>::operator=(Tensor && other) noexcept {
         if (!std::is_constant_evaluated()){
             memmove_s(data_.data(), size_in_bytes(), other.data(), other.size_in_bytes());
@@ -60,21 +66,25 @@ namespace TensorII::Core {
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::size_type Tensor<DType, shape_>::size() noexcept {
         return shape_.n_elems();
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::size_type Tensor<DType, shape_>::size_in_bytes() noexcept {
         return size() * sizeof(DType);
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::pointer Tensor<DType, shape_>::data() noexcept {
         return data_.data();
     }
 
     template<Scalar DType, auto shape_>
+    requires (is_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::const_pointer Tensor<DType, shape_>::data() const noexcept {
         return data_.data();
     }
