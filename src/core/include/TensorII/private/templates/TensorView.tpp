@@ -77,7 +77,7 @@ namespace TensorII::Core {
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
         requires (derived_from_static_shape<decltype(apparentShape)>)
-    constexpr TensorView<UnderlyingTensor, DynamicShape<TensorView<UnderlyingTensor, apparentShape, index_>::rank()>, index_ + 1>
+    constexpr TensorView<UnderlyingTensor, IndeterminateShape<TensorView<UnderlyingTensor, apparentShape, index_>::rank()>, index_ + 1>
     TensorView<UnderlyingTensor, apparentShape, index_>::
     operator[](Triple triple) {
         // TODO

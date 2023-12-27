@@ -73,7 +73,7 @@ namespace TensorII::Core {
 
     template<tensorRank rank_>
     template<tensorRank newRank>
-    requires(newRank < rank_ && newRank != 0)
+    requires(newRank < rank_)
     constexpr Shape<newRank> Shape<rank_>::demoted() const {
         Shape<newRank> newShape{};
         std::ranges::copy(dimensions.begin(), dimensions.begin() + newRank,
@@ -82,15 +82,12 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    template<tensorRank newRank>
-    requires(newRank == 0)
-    constexpr Shape<newRank> Shape<rank_>::demoted() const {
-        return Shape<newRank>{};
-    }
-
-    template<tensorRank rank_>
     constexpr Shape<rank_> Shape<rank_>::replace(tensorRank axis, tensorDimension newDimension) const {
+        if (axis >= rank_) {
+            throw std::out_of_range("Shape replace axis out of range");
+        }
         auto newShape = Shape<rank_>(*this);
+        // using dimensions directly here instead of index operator since its read only
         newShape.dimensions[axis] = newDimension;
         return newShape;
     }
@@ -106,8 +103,11 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
-    inline constexpr tensorDimension Shape<rank_>::operator[](tensorRank i) const {
-        return dimensions[i];
+    inline constexpr tensorDimension Shape<rank_>::operator[](tensorRank axis) const {
+        if (axis >= rank_) {
+            throw std::out_of_range("Shape index out of range");
+        }
+        return dimensions[axis];
     }
 
     template<tensorRank rank_>
