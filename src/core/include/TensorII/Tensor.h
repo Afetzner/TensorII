@@ -17,9 +17,10 @@
 #include "TensorII/private/ConceptUtil.h"
 
 namespace TensorII::Core {
+    using namespace Private;
 
     template <Scalar DType, auto shape_>
-    requires (is_shape<decltype(shape_)>)
+    requires (derived_from_shape<decltype(shape_)>)
     class Tensor {
     public:
         using value_type = DType;

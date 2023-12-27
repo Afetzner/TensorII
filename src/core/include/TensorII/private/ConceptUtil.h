@@ -30,5 +30,11 @@ namespace Private {
         Private::derived_from_specialization_impl<Template>(t);
     };
 
+namespace Private {
+    template<auto Literal> struct is_literal_type_helper : std::true_type {};
+}
+
+    template <typename T>
+    concept is_literal_type = Private::is_literal_type_helper<T{}> {}.value;
 }
 #endif //TENSOR_CONCEPTUTIL_H

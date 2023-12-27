@@ -23,7 +23,7 @@ namespace TensorII::Core::Private {
     template<Scalar DType>
     class TensorInitializer<DType, Shape<0>{}, 0> {
         template <Scalar, Shape, tensorRank> friend class TensorInitializer;
-        friend class Tensor<DType, Shape<0>{}>;
+        friend class TensorII::Core::Tensor<DType, Shape<0>{}>;
 
         const DType value;
         using Array = DType;

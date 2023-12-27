@@ -5,7 +5,6 @@
 #include "Catch2/catch_test_macros.hpp"
 #include "TensorII/Tensor.h"
 #include "TensorII/TensorView.h"
-#include "TensorII/IndexedTensorView.h"
 
 using namespace TensorII::Core;
 
@@ -15,7 +14,7 @@ TEST_CASE("TensorView Initialization", "[TensorView]"){
                                    {9, 10, 11, 12}});
     TensorView tensorView = tensor;
     SECTION("Empty index"){
-        auto tv = tensorView[{}];
+        auto tv = tensorView[Empty{}];
         CHECK(tv.shape() == Shape{3, 4});
     }
     SECTION("Single index"){
@@ -23,7 +22,9 @@ TEST_CASE("TensorView Initialization", "[TensorView]"){
         CHECK(tv.shape() == Shape{4});
     }
     SECTION("Start-stop index") {
-        auto tv = tensorView[{1, 2}];
+//        auto tv = tensorView[{1, 2, 3}];
+        static constexpr Triple triple = Triple{1, 2, 3};
+        auto tv = tensorView.slice<triple>();
         CHECK(tv.shape() == Shape{1, 4});
     }
 }

@@ -89,6 +89,13 @@ namespace TensorII::Core {
     }
 
     template<tensorRank rank_>
+    constexpr Shape<rank_> Shape<rank_>::replace(tensorRank axis, tensorDimension newDimension) const {
+        auto newShape = Shape<rank_>(*this);
+        newShape.dimensions[axis] = newDimension;
+        return newShape;
+    }
+
+    template<tensorRank rank_>
     template<tensorRank otherRank>
     constexpr bool Shape<rank_>::operator==(const Shape<otherRank> &other) const {
         // Edge case for rank 0

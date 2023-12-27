@@ -14,9 +14,9 @@
 #include "TensorII/private/ConceptUtil.h"
 
 namespace TensorII::Core {
-    template <tensorRank maxRank>
+    template <tensorRank maxRank_>
     class AnyShape{
-        std::array<tensorDimension, maxRank> dimensions;
+        std::array<tensorDimension, maxRank_> dimensions;
         tensorRank currRank;
 
         // region const iterator
@@ -69,37 +69,37 @@ namespace TensorII::Core {
         constexpr AnyShape();
 
         template<std::convertible_to<tensorDimension> ... Dims>
-        requires(sizeof...(Dims) <= maxRank)
+        requires(sizeof...(Dims) <= maxRank_)
         constexpr explicit AnyShape(const Dims ... dims);
 
         template<tensorRank rank_>
-        requires(rank_ <= maxRank)
+        requires(rank_ <= maxRank_)
         constexpr AnyShape(const Shape<rank_>& shape); // NOLINT(google-explicit-constructor)
 
         template <Util::SizedContainerCompatibleRange<tensorDimension> Range>
         constexpr explicit AnyShape(from_range_t, Range&& range);
 
         template<std::convertible_to<tensorDimension> ... Dims>
-        requires(sizeof...(Dims) <= maxRank)
+        requires(sizeof...(Dims) <= maxRank_)
         AnyShape& emplace(const Dims ... dims);
 
         template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
         AnyShape& emplace(from_range_t, Range&& range);
 
         template<tensorRank newRank>
-        requires(newRank <= maxRank)
+        requires(newRank <= maxRank_)
         constexpr Shape<newRank> shape() const;
 
         template <std::convertible_to<tensorDimension> ... Dims>
         [[nodiscard]]
-        constexpr AnyShape<maxRank> augmented(const Dims ... dims) const;
+        constexpr AnyShape<maxRank_> augmented(const Dims ... dims) const;
 
         template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
         [[nodiscard]]
-        constexpr AnyShape<maxRank> augmented(from_range_t, Range&& dims) const;
+        constexpr AnyShape<maxRank_> augmented(from_range_t, Range&& range) const;
 
         [[nodiscard]]
-        constexpr AnyShape<maxRank> demoted(tensorRank newRank) const;
+        constexpr AnyShape<maxRank_> demoted(tensorRank newRank) const;
 
         template <std::convertible_to<tensorDimension> ... Dims>
         void augment(const Dims ... dims);
@@ -112,7 +112,7 @@ namespace TensorII::Core {
         constexpr void reset();
 
         template <tensorRank otherRank>
-        requires(otherRank <= maxRank)
+        requires(otherRank <= maxRank_)
         AnyShape& operator=(const Shape<otherRank>& otherShape);
 
         template <tensorRank otherMaxRank>
@@ -125,6 +125,9 @@ namespace TensorII::Core {
         constexpr bool operator==(const AnyShape<otherMaxRank>& otherAnyShape) const;
 
         constexpr tensorDimension operator[](tensorRank i) const;
+
+        [[nodiscard]]
+        constexpr tensorRank maxRank() const;
 
         [[nodiscard]]
         constexpr tensorRank rank() const;
@@ -161,6 +164,18 @@ namespace TensorII::Core {
             return Iterator {dimensions.data()};
         };
     };
+
+    namespace Private{
+        template <class T>
+        concept derived_from_any_shape = requires(const T& t) {
+            derived_from_shape_specialization_impl<AnyShape>(t);
+        };
+
+        template <tensorRank R>
+        inline constexpr AnyShape<R> ShapeTail(AnyShape<R> shape){
+            return AnyShape<R>(from_range, shape | std::ranges::views::drop(1));
+        }
+    }
 }
 
 #endif //TENSOR_ANYSHAPE_H

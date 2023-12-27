@@ -51,6 +51,8 @@ namespace TensorII::Core {
         requires(newRank == 0)
         constexpr Shape<newRank> demoted() const;
 
+        constexpr Shape<rank_> replace(tensorRank axis, tensorDimension newDimension) const;
+
         template <tensorRank otherRank>
         constexpr bool operator==(const Shape<otherRank>& other) const;
 
@@ -115,11 +117,33 @@ namespace TensorII::Core {
     namespace Private {
         template<template<tensorRank> class Template, tensorRank Rank>
         void derived_from_shape_specialization_impl(const Template<Rank> &);
+
+        template <class T>
+        concept derived_from_shape = requires(const T& t) {
+            derived_from_shape_specialization_impl<Shape>(t);
+        };
+
+        // Specialization of Shape to be used similar to std::dynamic_extent
+        template<tensorRank N>
+        struct DynamicShape_t : public Shape<N> {};
+
+        template <class T>
+        concept derived_from_dynamic_shape = requires(const T& t) {
+            derived_from_shape_specialization_impl<DynamicShape_t>(t);
+        };
+
+        template <class T>
+        concept derived_from_static_shape = derived_from_shape<T> && !derived_from_dynamic_shape<T>;
+
+        template <tensorRank R>
+        requires (R > 0)
+        inline constexpr Shape<R-1> ShapeTail(Shape<R> shape){
+            return Shape<R - 1>(from_range, shape | std::ranges::views::drop(1));
+        }
     }
-    template <class T>
-    concept is_shape = requires(const T& t) {
-        Private::derived_from_shape_specialization_impl<Shape>(t);
-    };
+
+    template <tensorRank N>
+    constexpr Private::DynamicShape_t<N> DynamicShape() { return {}; }
 
     template<tensorRank explicitRank, tensorRank implicitRank>
     constexpr Shape<implicitRank> deduceShape(const Shape<explicitRank>& explicitShape, const Shape<implicitRank>& implicitShape);

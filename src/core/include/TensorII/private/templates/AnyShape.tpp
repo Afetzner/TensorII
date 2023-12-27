@@ -10,19 +10,19 @@
 
 namespace TensorII::Core {
 
-    template<tensorRank maxRank>
-    constexpr AnyShape<maxRank>::~AnyShape() = default;
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_>::~AnyShape() = default;
 
-    template<tensorRank maxRank>
-    constexpr AnyShape<maxRank>::AnyShape()
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_>::AnyShape()
     : dimensions{}
     , currRank(0)
     {}
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<std::convertible_to<tensorDimension> ... Dims>
-    requires(sizeof...(Dims) <= maxRank)
-    constexpr AnyShape<maxRank>::AnyShape(const Dims ... dims)
+    requires(sizeof...(Dims) <= maxRank_)
+    constexpr AnyShape<maxRank_>::AnyShape(const Dims ... dims)
     : dimensions{}
     {
         auto where = dimensions.begin();
@@ -33,22 +33,22 @@ namespace TensorII::Core {
         currRank = sizeof...(dims);
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<tensorRank rank_>
-    requires(rank_ <= maxRank)
-    constexpr AnyShape<maxRank>::AnyShape(const Shape<rank_>& shape)
+    requires(rank_ <= maxRank_)
+    constexpr AnyShape<maxRank_>::AnyShape(const Shape<rank_>& shape)
     : dimensions{}
     {
         std::ranges::copy_n(shape.dimensions.begin(), rank_, dimensions.begin());
         currRank = rank_;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
-    constexpr AnyShape<maxRank>::AnyShape(from_range_t, Range&& range)
+    constexpr AnyShape<maxRank_>::AnyShape(from_range_t, Range&& range)
     {
         tensorRank n_new = std::ranges::size(range);
-        if (n_new > maxRank) {
+        if (n_new > maxRank_) {
             throw std::length_error("Length of range exceeds capacity of shape");
         }
         // Copy new dimensions
@@ -56,12 +56,12 @@ namespace TensorII::Core {
         currRank = n_new;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
-    AnyShape<maxRank>& AnyShape<maxRank>::emplace(from_range_t, Range&& range)
+    AnyShape<maxRank_>& AnyShape<maxRank_>::emplace(from_range_t, Range&& range)
     {
        tensorRank n_new = std::ranges::size(range);
-        if (n_new > maxRank) {
+        if (n_new > maxRank_) {
             throw std::length_error("Length of range exceeds capacity of shape");
         }
         // Add new dimensions
@@ -70,10 +70,10 @@ namespace TensorII::Core {
         return *this;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<std::convertible_to<tensorDimension> ... Dims>
-    requires(sizeof...(Dims) <= maxRank)
-    AnyShape<maxRank>& AnyShape<maxRank>::emplace(const Dims ...dims) {
+    requires(sizeof...(Dims) <= maxRank_)
+    AnyShape<maxRank_>& AnyShape<maxRank_>::emplace(const Dims ...dims) {
         auto where = dimensions.begin();
         ([&where](tensorDimension dim){
             *where = dim;
@@ -83,10 +83,10 @@ namespace TensorII::Core {
         return *this;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<tensorRank newRank>
-    requires(newRank <= maxRank)
-    constexpr Shape<newRank> AnyShape<maxRank>::shape() const {
+    requires(newRank <= maxRank_)
+    constexpr Shape<newRank> AnyShape<maxRank_>::shape() const {
         if (currRank != newRank) {
             throw std::bad_any_cast();
         }
@@ -96,15 +96,15 @@ namespace TensorII::Core {
     }
 
     //region Constexpr augment & demote
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<std::convertible_to<tensorDimension>... Dims>
-    constexpr AnyShape<maxRank> AnyShape<maxRank>::augmented(const Dims... dims) const {
+    constexpr AnyShape<maxRank_> AnyShape<maxRank_>::augmented(const Dims... dims) const {
         tensorRank n_old = currRank;
         tensorRank n_new = sizeof...(Dims);
-        if (n_new > maxRank - n_old) {
+        if (n_new > maxRank_ - n_old) {
             throw std::length_error("Length of dimensions exceeds capacity of shape");
         }
-        AnyShape<maxRank> newShape;
+        AnyShape<maxRank_> newShape;
         // Copy old dimensions
         std::ranges::copy_n(dimensions.begin(), n_old, newShape.dimensions.begin());
         // Add new dimensions
@@ -117,16 +117,16 @@ namespace TensorII::Core {
         return newShape;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
-    constexpr AnyShape<maxRank> AnyShape<maxRank>::augmented(from_range_t, Range&& range) const
+    constexpr AnyShape<maxRank_> AnyShape<maxRank_>::augmented(from_range_t, Range&& range) const
     {
         tensorRank n_old = currRank;
         tensorRank n_new = std::ranges::size(range);
-        if (n_new > maxRank - n_old) {
+        if (n_new > maxRank_ - n_old) {
             throw std::length_error("Length of range exceeds capacity of shape");
         }
-        AnyShape<maxRank> newShape;
+        AnyShape<maxRank_> newShape;
         // Copy old dimensions
         std::ranges::copy_n(dimensions.begin(), n_old, newShape.dimensions.begin());
         // Add new dimensions
@@ -135,13 +135,13 @@ namespace TensorII::Core {
         return newShape;
     }
 
-    template<tensorRank maxRank>
-    constexpr AnyShape<maxRank> AnyShape<maxRank>::demoted(tensorRank newRank) const {
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_> AnyShape<maxRank_>::demoted(tensorRank newRank) const {
         tensorRank n_old = currRank;
         if (newRank > n_old) {
             throw std::length_error("New shape rank exceeds old shape's rank");
         }
-        AnyShape<maxRank> newShape;
+        AnyShape<maxRank_> newShape;
         // Copy old dimensions
         std::ranges::copy_n(dimensions.begin(), newRank, newShape.dimensions.begin());
         newShape.currRank = newRank;
@@ -150,14 +150,14 @@ namespace TensorII::Core {
     //endregion Constexpr augment & demote
 
     //region Non-constexpr augment & demote
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<std::convertible_to<tensorDimension>... Dims>
-    void AnyShape<maxRank>::augment(const Dims... dims)
+    void AnyShape<maxRank_>::augment(const Dims... dims)
     {
         tensorRank n_old = currRank;
         tensorRank n_new = sizeof...(Dims);
         if (n_new == 0) { return; }
-        if (n_new > maxRank - n_old) {
+        if (n_new > maxRank_ - n_old) {
             throw std::length_error("Length of dimensions exceeds capacity of shape");
         }
         // Add new dimensions
@@ -169,13 +169,13 @@ namespace TensorII::Core {
         currRank = n_old + n_new;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
-    void AnyShape<maxRank>::augment(from_range_t, Range&& range) {
+    void AnyShape<maxRank_>::augment(from_range_t, Range&& range) {
         tensorRank n_old = currRank;
         tensorRank n_new = std::ranges::size(range);
         if (n_new == 0) { return; }
-        if (n_new > maxRank - n_old) {
+        if (n_new > maxRank_ - n_old) {
             throw std::length_error("Length of range exceeds capacity of shape");
         }
         // Add new dimensions
@@ -183,8 +183,8 @@ namespace TensorII::Core {
         currRank = n_old + n_new;
     }
 
-    template<tensorRank maxRank>
-    void AnyShape<maxRank>::demote(tensorRank newRank) {
+    template<tensorRank maxRank_>
+    void AnyShape<maxRank_>::demote(tensorRank newRank) {
         tensorRank n_old = currRank;
         if (newRank > n_old) {
             throw std::length_error("New shape rank exceeds old shape's rank");
@@ -193,25 +193,25 @@ namespace TensorII::Core {
     }
     //endregion Non-constexpr augment & demote
 
-    template<tensorRank maxRank>
-    constexpr void AnyShape<maxRank>::reset() {
+    template<tensorRank maxRank_>
+    constexpr void AnyShape<maxRank_>::reset() {
         currRank = 0;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<tensorRank otherRank>
-    requires(otherRank <= maxRank)
-    AnyShape<maxRank>& AnyShape<maxRank>::operator=(const Shape<otherRank>& otherShape) {
+    requires(otherRank <= maxRank_)
+    AnyShape<maxRank_>& AnyShape<maxRank_>::operator=(const Shape<otherRank>& otherShape) {
         std::ranges::copy_n(otherShape.dimensions.begin(), otherRank, dimensions.begin());
         currRank = otherRank;
         return *this;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template <tensorRank otherMaxRank>
-    AnyShape<maxRank>& AnyShape<maxRank>::operator=(const AnyShape<otherMaxRank>& otherAnyShape) {
+    AnyShape<maxRank_>& AnyShape<maxRank_>::operator=(const AnyShape<otherMaxRank>& otherAnyShape) {
         tensorRank newRank = otherAnyShape.rank();
-        if (newRank > maxRank) {
+        if (newRank > maxRank_) {
             throw std::length_error("Rank of assignee exceeds capacity of shape");
         }
         std::ranges::copy_n(otherAnyShape.dimensions.begin(), newRank, dimensions.begin());
@@ -219,9 +219,9 @@ namespace TensorII::Core {
         return *this;
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<tensorRank otherRank>
-    constexpr bool AnyShape<maxRank>::operator==(const Shape<otherRank> &otherShape) const {
+    constexpr bool AnyShape<maxRank_>::operator==(const Shape<otherRank> &otherShape) const {
         if (currRank != otherRank) {
             return false;
         }
@@ -234,9 +234,9 @@ namespace TensorII::Core {
         return std::ranges::equal(us, them);
     }
 
-    template<tensorRank maxRank>
+    template<tensorRank maxRank_>
     template<tensorRank otherMaxRank>
-    constexpr bool AnyShape<maxRank>::operator==(const AnyShape<otherMaxRank> &otherAnyShape) const {
+    constexpr bool AnyShape<maxRank_>::operator==(const AnyShape<otherMaxRank> &otherAnyShape) const {
         if (this == &otherAnyShape){
             return true;
         }
@@ -250,21 +250,26 @@ namespace TensorII::Core {
         return std::ranges::equal(us, them);
     }
 
-    template<tensorRank maxRank>
-    constexpr tensorDimension AnyShape<maxRank>::operator[](tensorRank i) const {
+    template<tensorRank maxRank_>
+    constexpr tensorDimension AnyShape<maxRank_>::operator[](tensorRank i) const {
         if (i >= currRank){
             throw std::range_error("Index out of range");
         }
-        return (*shape<maxRank>())[i];
+        return (*shape<maxRank_>())[i];
     }
 
-    template<tensorRank maxRank>
-    constexpr tensorRank AnyShape<maxRank>::rank() const {
+    template<tensorRank maxRank_>
+    inline constexpr tensorRank AnyShape<maxRank_>::maxRank() const {
+        return maxRank_;
+    }
+
+    template<tensorRank maxRank_>
+    inline constexpr tensorRank AnyShape<maxRank_>::rank() const {
         return currRank;
     }
 
-    template<tensorRank maxRank>
-    constexpr tensorRank AnyShape<maxRank>::size() const {
+    template<tensorRank maxRank_>
+    constexpr tensorRank AnyShape<maxRank_>::size() const {
         auto is_positive = [](tensorDimension d) { return d > 0; };
         auto positives = dimensions
                          | std::views::take(currRank)
@@ -272,8 +277,8 @@ namespace TensorII::Core {
         return std::accumulate(positives.begin(), positives.end(), tensorDimension(1), std::multiplies());
     }
 
-    template<tensorRank maxRank>
-    constexpr bool AnyShape<maxRank>::isValidExplicit() const {
+    template<tensorRank maxRank_>
+    constexpr bool AnyShape<maxRank_>::isValidExplicit() const {
         auto is_non_positive = [](tensorDimension d) { return d <= 0; };
         auto non_positives = dimensions
                              | std::views::take(currRank)
@@ -281,8 +286,8 @@ namespace TensorII::Core {
         return non_positives.empty();
     }
 
-    template<tensorRank maxRank>
-    constexpr bool AnyShape<maxRank>::isValidImplicit() const {
+    template<tensorRank maxRank_>
+    constexpr bool AnyShape<maxRank_>::isValidImplicit() const {
         auto is_non_positive = [](tensorDimension d) { return d <= 0; };
         auto non_positives = dimensions
                              | std::views::take(currRank)
@@ -292,8 +297,8 @@ namespace TensorII::Core {
         );
     }
 
-    template<tensorRank maxRank>
-    constexpr bool AnyShape<maxRank>::isValid() const {
+    template<tensorRank maxRank_>
+    constexpr bool AnyShape<maxRank_>::isValid() const {
         return isValidExplicit() || isValidImplicit();
     }
 }

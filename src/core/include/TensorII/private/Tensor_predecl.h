@@ -10,8 +10,10 @@
 #include "memory"
 
 namespace TensorII::Core {
+    using namespace Private;
+
     template <Scalar DType, auto shape_>
-    requires (is_shape<decltype(shape_)>)
+    requires (derived_from_shape<decltype(shape_)>)
     class Tensor;
 
     namespace Private {
@@ -20,7 +22,7 @@ namespace TensorII::Core {
 
         template <class T>
         concept derived_from_tensor = requires(const T& t) {
-            Private::derived_from_tensor_impl(t);
+            derived_from_tensor_impl(t);
         };
     }
 }
