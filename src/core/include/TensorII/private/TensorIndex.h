@@ -122,7 +122,7 @@ namespace TensorII::Core::Indexing {
 
         [[nodiscard]] static inline constexpr bool is_singular() { return true; }
 
-        [[nodiscard]] inline constexpr std::optional<tensorIndex> single() const { return {triple.start}; }
+        [[nodiscard]] inline constexpr tensorIndex single() const { return triple.start; }
     };
 
     struct Empty : public TensorIndex {

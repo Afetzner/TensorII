@@ -51,31 +51,17 @@ namespace TensorII::Core {
         template<derived_from_tensor, auto, tensorRank> friend class TensorView;
 
         element_type* source;
-
-        static constexpr tensorRank index() { return index_; }
         std::array<TensorIndex, std::max(index_, tensorRank(1))> indecies;
 
-        constexpr explicit TensorView(element_type* source)
-            : source(source)
-        {}
+        static constexpr tensorRank index() { return index_; }
 
-        // TensorView(TensorView<Shape{...}, Shape{a, b, c, ...}>, IndexTriple{N})
-        // -> TensorView<Shape{...}, Shape{b, c, ...}>
-        template <auto otherApparentShape>
-        requires (ShapeTail(otherApparentShape) == apparentShape)
-        constexpr TensorView(TensorView<UnderlyingTensor, otherApparentShape, index_>, Single);
+        constexpr explicit TensorView(element_type* source);
 
-        // TensorView(TensorView<Shape{...}, Shape{a, b, c, ...}>, IndexTriple{})
-        // -> TensorView<Shape{...}, Shape{a, b, c, ...}>
-        template <auto otherApparentShape>
-        requires (otherApparentShape == apparentShape)
-        constexpr TensorView(TensorView<UnderlyingTensor, otherApparentShape, index_ - 1>, Empty);
+        template <Util::ContainerCompatibleRange<TensorIndex> Range>
+        constexpr explicit TensorView(element_type* source, const Range&& range);
 
-        // TensorView(TensorView<Shape{...}, Shape{a, b, c, ...}>, IndexTriple{x, y, z})
-        // -> TensorView<Shape{...}, Shape{(y-z)/z, b, c, ...}>
-        template <auto otherApparentShape>
-        requires (ShapeTail(otherApparentShape) == apparentShape)
-        constexpr TensorView(TensorView<UnderlyingTensor, otherApparentShape, index_ - 1>, Triple);
+        template <Util::ContainerCompatibleRange<TensorIndex> Range>
+        constexpr explicit TensorView(element_type* source, const Range&& range, TensorIndex index);
 
     public:
         constexpr TensorView(Tensor<element_type, apparentShape>& source)  // NOLINT(google-explicit-constructor)
@@ -83,7 +69,7 @@ namespace TensorII::Core {
 
         static constexpr tensorRank rank() { return apparentShape.rank(); }
 
-        constexpr TensorView<UnderlyingTensor, ShapeTail(apparentShape), index_ + 1>
+        constexpr TensorView<UnderlyingTensor, ShapeTail(apparentShape), index_>
         operator[](Single single);
 
         constexpr TensorView<UnderlyingTensor, apparentShape, index_ + 1>
@@ -98,6 +84,8 @@ namespace TensorII::Core {
 
         Shape<rank()> shape() { return apparentShape; }
     };
+
+
 
     template<Scalar DType, auto shape>
     TensorView(Tensor<DType, shape>) -> TensorView<Tensor<DType, shape>, shape, 0>;

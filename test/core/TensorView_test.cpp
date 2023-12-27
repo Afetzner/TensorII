@@ -22,9 +22,11 @@ TEST_CASE("TensorView Initialization", "[TensorView]"){
         CHECK(tv.shape() == Shape{4});
     }
     SECTION("Start-stop index") {
-//        auto tv = tensorView[{1, 2, 3}];
-        static constexpr Triple triple = Triple{1, 2, 3};
-        auto tv = tensorView.slice<triple>();
-        CHECK(tv.shape() == Shape{1, 4});
+        auto tv1 = tensorView[{1, 2}];
+//        CHECK(tv1.shape() == Shape{1, 4});
+
+        static constexpr Triple triple = Triple{1, 2};
+        auto tv2 = tensorView.slice<triple>();
+        CHECK(tv2.shape() == Shape{1, 4});
     }
 }

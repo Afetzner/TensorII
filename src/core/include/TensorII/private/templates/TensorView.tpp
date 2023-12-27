@@ -12,49 +12,36 @@
 namespace TensorII::Core {
     using namespace Indexing;
     //region Shape apparentShape specialization
-
-    // TensorView(TensorView<Shape{...}, Shape{a, b, c, ...}>, IndexTriple{N})
-    // -> TensorView<Shape{...}, Shape{b, c, ...}>
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
-        requires (derived_from_static_shape<decltype(apparentShape)>)
-    template <auto otherApparentShape>
-        requires (ShapeTail(otherApparentShape) == apparentShape)
-    constexpr TensorView<UnderlyingTensor, apparentShape, index_>::
-    TensorView(TensorView<UnderlyingTensor, otherApparentShape, index_> other, Single single) {
-        constexpr Shape ShapeRemaining = ShapeTail(apparentShape);
-        size_t true_idx = single.single().value() * ShapeRemaining.n_elems();
-        source = &other.source[true_idx];
-        indecies = {from_range, other.indecies};
-    }
+    requires (derived_from_static_shape<decltype(apparentShape)>)constexpr
+    TensorView<UnderlyingTensor, apparentShape, index_>::TensorView(element_type *source)
+            : source(source)
+            , indecies {}
+    {}
 
-    // TensorView(TensorView<Shape{...}, Shape{a, b, c, ...}>, IndexTriple{})
-    // -> TensorView<Shape{...}, Shape{a, b, c, ...}>
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
-        requires (derived_from_static_shape<decltype(apparentShape)>)
-    template <auto otherApparentShape>
-        requires (otherApparentShape == apparentShape)
-    constexpr  TensorView<UnderlyingTensor, apparentShape, index_>::
-    TensorView(TensorView<UnderlyingTensor, otherApparentShape, index_ - 1> other, Empty empty)
-    : source(other.source)
-    , indecies{from_range, other.indecies}
+    requires (derived_from_static_shape<decltype(apparentShape)>)
+    template<Util::ContainerCompatibleRange<TensorIndex> Range>
+    constexpr TensorView<UnderlyingTensor, apparentShape, index_>::TensorView(element_type *source,
+                                                                              const Range &&range)
+            : source(source)
+            , indecies {}
     {
-        indecies[index_] = empty;
+        std::ranges::copy_n(range.begin(), index_, indecies.begin());
     }
 
-    // TensorView(TensorView<Shape{...}, Shape{a, b, c, ...}>, IndexTriple{x, y, z})
-    // -> TensorView<Shape{...}, Shape{(y-z)/z, b, c, ...}>
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
-        requires (derived_from_static_shape<decltype(apparentShape)>)
-    template <auto otherApparentShape>
-        requires (ShapeTail(otherApparentShape) == apparentShape)
-    constexpr TensorView<UnderlyingTensor, apparentShape, index_>::
-    TensorView(TensorView<UnderlyingTensor, otherApparentShape, index_ - 1> other, Triple triple)
-    : source(other.source)
-    , indecies{from_range, other.indecies}
+    requires (derived_from_static_shape<decltype(apparentShape)>)
+    template<Util::ContainerCompatibleRange<TensorIndex> Range>
+    constexpr TensorView<UnderlyingTensor, apparentShape, index_>::TensorView(element_type *source,
+                                                                              const Range &&range,
+                                                                              TensorIndex index)
+            : source(source)
+            , indecies {}
     {
-        indecies[index_] = triple;
+        std::ranges::copy_n(range.begin(), index_ - 1, indecies.begin());
+        indecies[index_ - 1] = index;
     }
-
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
         requires (derived_from_static_shape<decltype(apparentShape)>)
@@ -63,17 +50,18 @@ namespace TensorII::Core {
     requires(apparentShape == source.shape())
     : source (source.data())
     , indecies {}
-    {
-        // TODO
-    }
+    {}
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
         requires (derived_from_static_shape<decltype(apparentShape)>)
-    constexpr TensorView<UnderlyingTensor, ShapeTail(apparentShape), index_ + 1>
+    constexpr TensorView<UnderlyingTensor, ShapeTail(apparentShape), index_>
     TensorView<UnderlyingTensor, apparentShape, index_>::
     operator[](Single single) {
-        using NewTensorView = TensorView<UnderlyingTensor, ShapeTail(apparentShape), index_ + 1>;
-        return NewTensorView{*this, single};
+        static constexpr auto restShape = ShapeTail(apparentShape);
+        using NewTensorView = TensorView<UnderlyingTensor, restShape, index_>;
+        element_type* newSource = &source[single.single() * restShape.n_elems()];
+        return NewTensorView{newSource,
+                             indecies| std::ranges::views::take(index_)};
     }
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
@@ -82,17 +70,22 @@ namespace TensorII::Core {
     TensorView<UnderlyingTensor, apparentShape, index_>::
     operator[](Empty empty) {
         using NewTensorView = TensorView<UnderlyingTensor, apparentShape, index_ + 1>;
-        return NewTensorView{*this, empty};
+        return NewTensorView {source,
+                              indecies| std::ranges::views::take(index_),
+                              static_cast<TensorIndex>(empty)};
     }
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
         requires (derived_from_static_shape<decltype(apparentShape)>)
     constexpr TensorView<UnderlyingTensor, DynamicShape<TensorView<UnderlyingTensor, apparentShape, index_>::rank()>, index_ + 1>
     TensorView<UnderlyingTensor, apparentShape, index_>::
-    operator[](Triple index) {
+    operator[](Triple triple) {
         // TODO
-        using NewTensorView = TensorView<UnderlyingTensor, DynamicShape<rank()>(), index_ + 1>;
-        return NewTensorView (*this, index);
+//        using NewTensorView = TensorView<UnderlyingTensor, DynamicShape<rank()>(), index_ + 1>;
+//        return NewTensorView {source,
+//                              indecies | std::ranges::views::take(index_),
+//                              static_cast<TensorIndex>(triple)};
+        return {};
     }
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
@@ -104,7 +97,9 @@ namespace TensorII::Core {
     {
         static constexpr auto newShape = apparentShape.replace(index_, triple.count(apparentShape[0]));
         using NewTensorView = TensorView<UnderlyingTensor, newShape, index_ + 1>;
-        return NewTensorView{*this, triple};
+        return NewTensorView {source,
+                              indecies | std::ranges::views::take(index_),
+                              static_cast<TensorIndex>(triple)};
     }
 
 //    template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
