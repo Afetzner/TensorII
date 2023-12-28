@@ -147,6 +147,15 @@ namespace TensorII::Core {
         return this->isValidExplicit() || this->isValidImplicit();
     }
 
+    template<tensorRank rank_>
+    constexpr Shape<rank_>::Iterator Shape<rank_>::begin() const { return Iterator{dimensions.data()}; }
+
+    template<tensorRank rank_>
+    constexpr Shape<rank_>::Iterator Shape<rank_>::end() const {
+        if (rank_ != 0) { return Iterator{dimensions.data() + dimensions.size()}; }
+        return Iterator{dimensions.data()};
+    }
+
     template<tensorRank explicitRank, tensorRank implicitRank>
     constexpr Shape<implicitRank>
     deduceShape(const Shape<explicitRank> &explicitShape, const Shape<implicitRank> &implicitShape) {

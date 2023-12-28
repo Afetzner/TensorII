@@ -8,7 +8,7 @@
 
 using namespace TensorII::Core;
 
-TEST_CASE("Shapes validity checks", "[shape][static]") {
+TEST_CASE("Shape validity checks", "[Shape][static]") {
     SECTION("Explicit shapes"){
         // Explicit shapes are valid explicit shapes
         STATIC_CHECK(Shape{}.isValidExplicit());
@@ -64,7 +64,7 @@ TEST_CASE("Shapes validity checks", "[shape][static]") {
     }
 }
 
-TEST_CASE("Shape construction", "[shape]"){
+TEST_CASE("Shape construction", "[Shape]"){
     SECTION("From args", "Shapes created with array initialization should equal the same crated by passing args"){
         Shape<0> shape0 = {};
         CHECK(shape0 == Shape{});
@@ -83,19 +83,19 @@ TEST_CASE("Shape construction", "[shape]"){
     }
 }
 
-TEMPLATE_TEST_CASE("Shape construction from range", "[shape][template]",
+TEMPLATE_TEST_CASE("Shape construction from range", "[Shape][template]",
                    (std::array<int, 4>), (std::array<size_t, 4>), std::vector<int>, std::vector<size_t>) {
     GIVEN("A range of 4 values"){
         TestType range = {1, 2, 3, 4};
 
-        THEN("The range has size 4"){
+        THEN("The range has n_elems 4"){
             REQUIRE(std::ranges::size(range) == 4);
         }
 
         WHEN("A shape is created from that range"){
             Shape<4> shape = Shape<4>{from_range, range};
 
-            THEN("The shape also has size 4"){
+            THEN("The shape also has n_elems 4"){
                 CHECK(shape.rank() == 4);
                 CHECK(std::ranges::size(shape) == 4);
             }
@@ -116,7 +116,7 @@ TEMPLATE_TEST_CASE("Shape construction from range", "[shape][template]",
     }
 }
 
-SCENARIO("A Shape's dimensions can be indexed", "[shape]"){
+SCENARIO("A Shape's dimensions can be indexed", "[Shape]"){
     GIVEN("A shape of rank 4") {
         Shape shape = Shape{1, 2, 3, 4};
 
@@ -142,7 +142,7 @@ SCENARIO("A Shape's dimensions can be indexed", "[shape]"){
     }
 }
 
-TEST_CASE("Shape n_elems", "[shape][static]"){
+TEST_CASE("Shape n_elems", "[Shape][static]"){
     SECTION("Explicit shapes"){
         STATIC_CHECK(Shape{}.n_elems() == 1);
         STATIC_CHECK(Shape{5}.n_elems() == 5);
@@ -158,7 +158,7 @@ TEST_CASE("Shape n_elems", "[shape][static]"){
     }
 }
 
-TEST_CASE("Shape deduction", "[shape][static]"){
+TEST_CASE("Shape deduction", "[Shape][static]"){
     SECTION("Valid, compatible shapes") {
         {
             Shape Explicit = Shape{10};
@@ -270,7 +270,7 @@ TEST_CASE("Shape deduction", "[shape][static]"){
     }
 }
 
-TEST_CASE("Shape augment from args", "[shape]"){
+TEST_CASE("Shape augment from args", "[Shape]"){
     {
         Shape before = Shape {1, 2, 3};
         Shape after = before.augmented(4);
@@ -288,13 +288,13 @@ TEST_CASE("Shape augment from args", "[shape]"){
     }
 }
 
-TEMPLATE_TEST_CASE("Shape augmented from range", "[shape][template]",
+TEMPLATE_TEST_CASE("Shape augmented from range", "[Shape][template]",
                    (std::array<int, 4>), (std::array<size_t, 4>), std::vector<int>, std::vector<size_t>) {
     GIVEN("A range of 4 values and a shape of 3 values"){
         TestType range = {4, 5, 6, 7};
         Shape<3> smallShape = {1, 2, 3};
 
-        THEN("The range has size 4 and the shape has size 3"){
+        THEN("The range has size 4 and the shape has n_elems 3"){
             REQUIRE(std::ranges::size(range) == 4);
             REQUIRE(smallShape.rank() == 3);
         }
@@ -302,7 +302,7 @@ TEMPLATE_TEST_CASE("Shape augmented from range", "[shape][template]",
         WHEN("A shape is created from that range"){
             Shape<7> shape = smallShape.augmented<7>(from_range, range);
 
-            THEN("The shape now has size 7"){
+            THEN("The shape now has n_elems 7"){
                 CHECK(shape.rank() == 7);
                 CHECK(std::ranges::size(shape) == 7);
             }
@@ -325,7 +325,7 @@ TEMPLATE_TEST_CASE("Shape augmented from range", "[shape][template]",
     }
 }
 
-SCENARIO("Shapes can be demoted", "[shape]"){
+SCENARIO("Shapes can be demoted", "[Shape]"){
     GIVEN("A shape of rank 4") {
         Shape before = Shape{1, 2, 3, 4};
 
@@ -354,7 +354,7 @@ SCENARIO("Shapes can be demoted", "[shape]"){
     }
 }
 
-SCENARIO("A Shape's dimensions can be replaced", "[shape]"){
+SCENARIO("A Shape's dimensions can be replaced", "[Shape]"){
     GIVEN("A shape of rank 4") {
         Shape before = Shape{1, 2, 3, 4};
 

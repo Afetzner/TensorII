@@ -30,7 +30,7 @@ namespace TensorII::Core {
         constexpr Shape(const tensorDimension (&array)[rank_]);  // NOLINT(google-explicit-constructor)
 
         /// Create a Shape from a range of tensorDimensions.
-        /// If the range is sized, it will check that it's length matches
+        /// If the range is sized, it will check that it's length matches. On length mismatch, throws std::length_error
         template<Util::ContainerCompatibleRange<tensorDimension> Range>
         constexpr explicit Shape(from_range_t, Range&& range);
 
@@ -45,7 +45,7 @@ namespace TensorII::Core {
 
         /// Creates a new shape that is the result of appending the range the existing dimensions
         /// Requires that the user inform how long the new range will be
-        /// If the range is sized, it will check that its length matches
+        /// If the range is sized, it will check that its length matches. On length mismatch, throws std::length_error
         template<tensorRank newRank, Util::ContainerCompatibleRange<tensorDimension> Range>
         constexpr Shape<newRank> augmented(from_range_t, Range&& augmentDimensions) const;
 
@@ -55,6 +55,7 @@ namespace TensorII::Core {
         constexpr Shape<newRank> demoted() const;
 
         /// Creates a new shape that is the existing dimensions, except the one at 'axis' is replace with 'newDimension'
+        /// If axis is not a valid axis of the shape, throws std::out_of_bounds
         constexpr Shape<rank_> replace(tensorRank axis, tensorDimension newDimension) const;
 
         /// Two shapes are equal if they are the same length and every dimension is equal piece-wise
@@ -62,6 +63,7 @@ namespace TensorII::Core {
         constexpr bool operator==(const Shape<otherRank>& other) const;
 
         /// Returns an r-value of the dimension at the given axis
+        /// On indexing on invalid axis, throws std::out_of_range
         constexpr tensorDimension operator[](tensorRank axis) const;
 
         /// Returns the rank - the number of dimensions - of the shape
@@ -114,14 +116,11 @@ namespace TensorII::Core {
 
         /// Returns an iterator to the beginning of the shape
         [[nodiscard]]
-        constexpr Iterator begin() const { return Iterator{dimensions.data()}; }
+        constexpr Iterator begin() const;
 
         /// Returns an iterator to the end of the shape. For a 0-rank shape, it returns the beginning
         [[nodiscard]]
-        constexpr Iterator end() const {
-            if (rank_ != 0) { return Iterator{dimensions.data() + dimensions.size()}; }
-            return Iterator{dimensions.data()};
-        }
+        constexpr Iterator end() const;
     };
 
     Shape() -> Shape<0>;

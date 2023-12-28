@@ -8,399 +8,610 @@
 
 #include "TensorII/AnyShape.h"
 #include "Catch2/catch_test_macros.hpp"
+#include "Catch2/catch_template_test_macros.hpp"
 
 using namespace TensorII::Core;
 
-TEST_CASE("AnyShape constructor from args", "[AnyShape]"){
-    constexpr AnyShape<4> anyShape0{};
-    STATIC_CHECK(anyShape0 == Shape{});
+TEST_CASE("AnyShape construction", "[AnyShape]") {
+    SECTION("From args", "AnyShapes created with array initialization should equal the same crated by passing args") {
+        AnyShape<4> anyShape0 = {};
+        CHECK(anyShape0 == Shape{});
 
-    constexpr AnyShape<4> anyShape1{1};
-    STATIC_CHECK(anyShape1 == Shape{1});
+        AnyShape<4> anyShape1 = {1};
+        CHECK(anyShape1 == Shape{1});
 
-    constexpr AnyShape<4> anyShape2{1, 2};
-    STATIC_CHECK(anyShape2 == Shape{1, 2});
+        AnyShape<4> anyShape2 = {1, 2};
+        CHECK(anyShape2 == Shape{1, 2});
 
-    constexpr AnyShape<4> anyShape3{1, 2, 3};
-    STATIC_CHECK(anyShape3 == Shape{1, 2, 3});
+        AnyShape<4> anyShape3 = {1, 2, 3};
+        CHECK(anyShape3 == Shape{1, 2, 3});
 
-    constexpr AnyShape<4> anyShape4{1, 2, 3, 4};
-    STATIC_CHECK(anyShape4 == Shape{1, 2, 3, 4});
-}
-
-TEST_CASE("AnyShape constructor from shape", "[AnyShape]"){
-    constexpr AnyShape<4> anyShape0 = Shape{};
-    STATIC_CHECK((anyShape0 == Shape{}));
-
-    constexpr AnyShape<4> anyShape1 = Shape{1};
-    STATIC_CHECK((anyShape1 == Shape{1}));
-
-    constexpr AnyShape<4> anyShape2 = Shape{1, 2};
-    STATIC_CHECK((anyShape2 == Shape{1, 2}));
-
-    constexpr AnyShape<4> anyShape3 = Shape{1, 2, 3};
-    STATIC_CHECK((anyShape3 == Shape{1, 2, 3}));
-
-    constexpr AnyShape<4> anyShape4 = Shape{1, 2, 3, 4};
-    STATIC_CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-}
-
-TEST_CASE("AnyShape constructor from range, array", "[AnyShape]"){
-    std::array<tensorDimension, 1> array1{1};
-    AnyShape<4> anyShape1{from_range, array1};
-    CHECK((anyShape1 == Shape{1}));
-
-    std::array<tensorDimension, 2> array2{1, 2};
-    AnyShape<4> anyShape2{from_range, array2};
-    CHECK((anyShape2 == Shape{1, 2}));
-
-    std::array<tensorDimension, 3> array3{1, 2, 3};
-    AnyShape<4> anyShape3{from_range, array3};
-    CHECK((anyShape3 == Shape{1, 2, 3}));
-
-    std::array<tensorDimension, 4> array4{1, 2, 3, 4};
-    AnyShape<4> anyShape4{from_range, array4};
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-}
-
-TEST_CASE("AnyShape constructor from range, vector", "[AnyShape]"){
-    std::vector<tensorDimension> vector0{};
-    AnyShape<4> anyShape0{from_range, vector0};
-    CHECK((anyShape0 == Shape{}));
-
-    std::vector<tensorDimension> vector1{1};
-    AnyShape<4> anyShape1{from_range, vector1};
-    CHECK((anyShape1 == Shape{1}));
-
-    std::vector<tensorDimension> vector2{1, 2};
-    AnyShape<4> anyShape2{from_range, vector2};
-    CHECK((anyShape2 == Shape{1, 2}));
-
-    std::vector<tensorDimension> vector3{1, 2, 3};
-    AnyShape<4> anyShape3{from_range, vector3};
-    CHECK((anyShape3 == Shape{1, 2, 3}));
-
-    std::vector<tensorDimension> vector4{1, 2, 3, 4};
-    AnyShape<4> anyShape4{from_range, vector4};
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-}
-
-TEST_CASE("AnyShape emplace from args", "[AnyShape]"){
-    AnyShape<4> anyShape0;
-    anyShape0.emplace();
-    CHECK((anyShape0 == Shape{}));
-
-    AnyShape<4> anyShape1;
-    anyShape1.emplace(1);
-    CHECK((anyShape1 == Shape{1}));
-
-    AnyShape<4> anyShape2;
-    anyShape2.emplace(1, 2);
-    CHECK((anyShape2 == Shape{1, 2}));
-
-    AnyShape<4> anyShape3;
-    anyShape3.emplace(1, 2, 3);
-    CHECK((anyShape3 == Shape{1, 2, 3}));
-
-    AnyShape<4> anyShape4;
-    anyShape4.emplace(1, 2, 3, 4);
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-
-    // Should not compile
-//    AnyShape<4> anyShape5;
-//    anyShape5.emplace(1, 2, 3, 4, 5);
-}
-
-TEST_CASE("AnyShape emplace from range, array", "[AnyShape]"){
-    std::array<tensorDimension, 1> array1{1};
-    AnyShape<4> anyShape1;
-    anyShape1.emplace(from_range, array1);
-    CHECK((anyShape1 == Shape{1}));
-
-    std::array<tensorDimension, 2> array2{1, 2};
-    AnyShape<4> anyShape2;
-    anyShape2.emplace(from_range, array2);
-    CHECK((anyShape2 == Shape{1, 2}));
-
-    std::array<tensorDimension, 3> array3{1, 2, 3};
-    AnyShape<4> anyShape3;
-    anyShape3.emplace(from_range, array3);
-    CHECK((anyShape3 == Shape{1, 2, 3}));
-
-    std::array<tensorDimension, 4> array4{1, 2, 3, 4};
-    AnyShape<4> anyShape4;
-    anyShape4.emplace(from_range, array4);
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-
-    std::array<tensorDimension, 5> array5{1, 2, 3, 4, 5};
-    AnyShape<4> anyShape5;
-    CHECK_THROWS((anyShape5.emplace(from_range, array5)));
-}
-
-TEST_CASE("AnyShape emplace from range, vector", "[AnyShape]"){
-    std::vector<tensorDimension> vector0{};
-    AnyShape<4> anyShape0;
-    anyShape0.emplace(from_range, vector0);
-    CHECK((anyShape0 == Shape{}));
-
-
-    std::vector<tensorDimension> vector1{1};
-    AnyShape<4> anyShape1;
-    anyShape1.emplace(from_range, vector1);
-    CHECK((anyShape1 == Shape{1}));
-
-    std::vector<tensorDimension> vector2{1, 2};
-    AnyShape<4> anyShape2;
-    anyShape2.emplace(from_range, vector2);
-    CHECK((anyShape2 == Shape{1, 2}));
-
-    std::vector<tensorDimension> vector3{1, 2, 3};
-    AnyShape<4> anyShape3;
-    anyShape3.emplace(from_range, vector3);
-    CHECK((anyShape3 == Shape{1, 2, 3}));
-
-    std::vector<tensorDimension> vector4{1, 2, 3, 4};
-    AnyShape<4> anyShape4;
-    anyShape4.emplace(from_range, vector4);
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-
-    std::vector<tensorDimension> vector5{1, 2, 3, 4, 5};
-    AnyShape<4> anyShape5;
-    CHECK_THROWS(anyShape5.emplace(from_range, vector5));
-}
-
-TEST_CASE("AnyShape augmented from args", "[AnyShape]") {
-    constexpr AnyShape<4> anyShape0{};
-    STATIC_CHECK((anyShape0.augmented() == Shape{}));
-    STATIC_CHECK((anyShape0.augmented(1) == Shape{1}));
-    STATIC_CHECK((anyShape0.augmented(1, 2) == Shape{1, 2}));
-    STATIC_CHECK((anyShape0.augmented(1, 2, 3) == Shape{1, 2, 3}));
-    STATIC_CHECK((anyShape0.augmented(1, 2, 3, 4) == Shape{1, 2, 3, 4}));
-    CHECK_THROWS(anyShape0.augmented(1, 2, 3, 4, 5));
-
-    constexpr AnyShape<4> anyShape1{10};
-    STATIC_CHECK((anyShape1.augmented() == Shape{10}));
-    STATIC_CHECK((anyShape1.augmented(1) == Shape{10, 1}));
-    STATIC_CHECK((anyShape1.augmented(1, 2) == Shape{10, 1, 2}));
-    STATIC_CHECK((anyShape1.augmented(1, 2, 3) == Shape{10, 1, 2, 3}));
-    CHECK_THROWS(anyShape1.augmented(1, 2, 3, 4));
-
-    constexpr AnyShape<4> anyShape2{10, 20};
-    STATIC_CHECK((anyShape2.augmented() == Shape{10, 20}));
-    STATIC_CHECK((anyShape2.augmented(1) == Shape{10, 20, 1}));
-    STATIC_CHECK((anyShape2.augmented(1, 2) == Shape{10, 20, 1, 2}));
-    CHECK_THROWS(anyShape2.augmented(1, 2, 3));
-
-    constexpr AnyShape<4> anyShape3{10, 20, 30};
-    STATIC_CHECK((anyShape3.augmented() == Shape{10, 20, 30}));
-    STATIC_CHECK((anyShape3.augmented(1) == Shape{10, 20, 30, 1}));
-    CHECK_THROWS(anyShape3.augmented(1, 2));
-
-    constexpr AnyShape<4> anyShape4{10, 20, 30, 40};
-    STATIC_CHECK((anyShape4.augmented() == Shape{10, 20, 30, 40}));
-    CHECK_THROWS((anyShape4.augmented(1)));
-}
-
-TEST_CASE("AnyShape augmented from range - array", "[AnyShape]") {
-    constexpr std::array<tensorDimension, 1> array1{1};
-    constexpr std::array<tensorDimension, 2> array2{1, 2};
-    constexpr std::array<tensorDimension, 3> array3{1, 2, 3};
-    constexpr std::array<tensorDimension, 4> array4{1, 2, 3, 4};
-    constexpr std::array<tensorDimension, 5> array5{1, 2, 3, 4, 5};
-
-
-    constexpr AnyShape<4> anyShape0{};
-    STATIC_CHECK(anyShape0.augmented(from_range, array1) == Shape{1});
-    STATIC_CHECK(anyShape0.augmented(from_range, array2) == Shape{1, 2});
-    STATIC_CHECK(anyShape0.augmented(from_range, array3) == Shape{1, 2, 3});
-    STATIC_CHECK(anyShape0.augmented(from_range, array4) == Shape{1, 2, 3, 4});
-    CHECK_THROWS(anyShape0.augmented(from_range, array5));
-
-    constexpr AnyShape<4> anyShape1{10};
-    STATIC_CHECK(anyShape1.augmented(from_range, array1) == Shape{10, 1});
-    STATIC_CHECK(anyShape1.augmented(from_range, array2) == Shape{10, 1, 2});
-    STATIC_CHECK(anyShape1.augmented(from_range, array3) == Shape{10, 1, 2, 3});
-    CHECK_THROWS(anyShape1.augmented(from_range, array4));
-
-    constexpr AnyShape<4> anyShape2{10, 20};
-    STATIC_CHECK(anyShape2.augmented(from_range, array1) == Shape{10, 20, 1});
-    STATIC_CHECK(anyShape2.augmented(from_range, array2) == Shape{10, 20, 1, 2});
-    CHECK_THROWS(anyShape2.augmented(from_range, array3));
-
-    constexpr AnyShape<4> anyShape3{10, 20, 30};
-    STATIC_CHECK(anyShape3.augmented(from_range, array1) == Shape{10, 20, 30, 1});
-    CHECK_THROWS(anyShape3.augmented(from_range, array2));
-
-    constexpr AnyShape<4> anyShape4{10, 20, 30, 40};
-    CHECK_THROWS(anyShape4.augmented(from_range, array1));
-}
-
-TEST_CASE("AnyShape augmented from range - vector", "[AnyShape]") {
-    std::vector<tensorDimension> vector0{};
-    std::vector<tensorDimension> vector1{1};
-    std::vector<tensorDimension> vector2{1, 2};
-    std::vector<tensorDimension> vector3{1, 2, 3};
-    std::vector<tensorDimension> vector4{1, 2, 3, 4};
-    std::vector<tensorDimension> vector5{1, 2, 3, 4, 5};
-
-
-    AnyShape<4> anyShape0{};
-    CHECK((anyShape0.augmented(from_range, vector0) == Shape{}));
-    CHECK((anyShape0.augmented(from_range, vector1) == Shape{1}));
-    CHECK((anyShape0.augmented(from_range, vector2) == Shape{1, 2}));
-    CHECK((anyShape0.augmented(from_range, vector3) == Shape{1, 2, 3}));
-    CHECK((anyShape0.augmented(from_range, vector4) == Shape{1, 2, 3, 4}));
-    CHECK_THROWS(anyShape0.augmented(from_range, vector5));
-
-    AnyShape<4> anyShape1{10};
-    CHECK((anyShape1.augmented(from_range, vector0) == Shape{10}));
-    CHECK((anyShape1.augmented(from_range, vector1) == Shape{10, 1}));
-    CHECK((anyShape1.augmented(from_range, vector2) == Shape{10, 1, 2}));
-    CHECK((anyShape1.augmented(from_range, vector3) == Shape{10, 1, 2, 3}));
-    CHECK_THROWS(anyShape1.augmented(from_range, vector4));
-
-    AnyShape<4> anyShape2{10, 20};
-    CHECK((anyShape2.augmented(from_range, vector0) == Shape{10, 20}));
-    CHECK((anyShape2.augmented(from_range, vector1) == Shape{10, 20, 1}));
-    CHECK((anyShape2.augmented(from_range, vector2) == Shape{10, 20, 1, 2}));
-    CHECK_THROWS(anyShape2.augmented(from_range, vector3));
-
-    AnyShape<4> anyShape3{10, 20, 30};
-    CHECK((anyShape3.augmented(from_range, vector0) == Shape{10, 20, 30}));
-    CHECK((anyShape3.augmented(from_range, vector1) == Shape{10, 20, 30, 1}));
-    CHECK_THROWS(anyShape3.augmented(from_range, vector2));
-
-    AnyShape<4> anyShape4{10, 20, 30, 40};
-    CHECK((anyShape4.augmented(from_range, vector0) == Shape{10, 20, 30, 40}));
-    CHECK_THROWS(anyShape4.augmented(from_range, vector1));
-}
-
-TEST_CASE("AnyShape demoted", "[AnyShape]") {
-    constexpr AnyShape<4> anyShape4{1, 2, 3, 4};
-    STATIC_CHECK((anyShape4.demoted(4) == Shape{1, 2, 3, 4}));
-    STATIC_CHECK((anyShape4.demoted(3) == Shape{1, 2, 3}));
-    STATIC_CHECK((anyShape4.demoted(2) == Shape{1, 2}));
-    STATIC_CHECK((anyShape4.demoted(1) == Shape{1}));
-    STATIC_CHECK((anyShape4.demoted(0) == Shape{}));
-
-    constexpr AnyShape<4> anyShape3{1, 2, 3};
-    CHECK_THROWS(anyShape3.demoted(4));
-    STATIC_CHECK((anyShape3.demoted(3) == Shape{1, 2, 3}));
-    STATIC_CHECK((anyShape3.demoted(2) == Shape{1, 2}));
-    STATIC_CHECK((anyShape3.demoted(1) == Shape{1}));
-    STATIC_CHECK((anyShape3.demoted(0) == Shape{}));
-
-    constexpr AnyShape<4> anyShape2{1, 2};
-    CHECK_THROWS(anyShape2.demoted(4));
-    CHECK_THROWS(anyShape2.demoted(3));
-    STATIC_CHECK((anyShape2.demoted(2) == Shape{1, 2}));
-    STATIC_CHECK((anyShape2.demoted(1) == Shape{1}));
-    STATIC_CHECK((anyShape2.demoted(0) == Shape{}));
-
-    constexpr AnyShape<4> anyShape1{1};
-    CHECK_THROWS(anyShape1.demoted(4));
-    CHECK_THROWS(anyShape1.demoted(3));
-    CHECK_THROWS(anyShape1.demoted(2));
-    STATIC_CHECK((anyShape1.demoted(1) == Shape{1}));
-    STATIC_CHECK((anyShape1.demoted(0) == Shape{}));
-
-    constexpr AnyShape<4> anyShape0{};
-    CHECK_THROWS(anyShape0.demoted(4));
-    CHECK_THROWS(anyShape0.demoted(3));
-    CHECK_THROWS(anyShape0.demoted(2));
-    CHECK_THROWS(anyShape0.demoted(1));
-    STATIC_CHECK((anyShape0.demoted(0) == Shape{}));
-}
-
-TEST_CASE("AnyShape augment args", "[AnyShape]") {
-    AnyShape<10> anyShape0{};
-    anyShape0.augment();
-    CHECK((anyShape0 == Shape{}));
-    anyShape0.augment(1);
-    CHECK((anyShape0 == Shape{1}));
-    anyShape0.augment(2, 3);
-    CHECK((anyShape0 == Shape{1, 2, 3}));
-    anyShape0.augment(4, 5, 6);
-    CHECK((anyShape0 == Shape{1, 2, 3, 4, 5, 6}));
-
-    AnyShape<10> anyShape4{1, 2, 3, 4};
-    anyShape4.augment();
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-    anyShape4.augment(5, 6, 7, 8, 9, 10);
-    CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
-    anyShape4.augment();
-    CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
-    CHECK_THROWS(anyShape4.augment(1));
-}
-
-TEST_CASE("AnyShape augment from range vector", "[AnyShape]") {
-    AnyShape<10> anyShape0{};
-    anyShape0.augment(from_range, std::vector<tensorDimension>{});
-    CHECK((anyShape0 == Shape{}));
-    anyShape0.augment(from_range, std::vector<tensorDimension>{1});
-    CHECK((anyShape0 == Shape{1}));
-    anyShape0.augment(from_range, std::vector<tensorDimension>{2, 3});
-    CHECK((anyShape0 == Shape{1, 2, 3}));
-    anyShape0.augment(from_range, std::vector<tensorDimension>{4, 5, 6});
-    CHECK((anyShape0 == Shape{1, 2, 3, 4, 5, 6}));
-
-    AnyShape<10> anyShape4{1, 2, 3, 4};
-    anyShape4.augment(from_range, std::vector<tensorDimension>{});
-    CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-    anyShape4.augment(from_range, std::vector<tensorDimension>{5, 6, 7, 8, 9, 10});
-    CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
-    anyShape4.augment(from_range, std::vector<tensorDimension>{});
-    CHECK((anyShape4 == Shape{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
-    CHECK_THROWS(anyShape4.augment(from_range, std::vector<tensorDimension>{1}));
-}
-
-TEST_CASE("AnyShape demote", "[AnyShape]") {
-    {
-        AnyShape<4> anyShape4{1, 2, 3, 4};
-        anyShape4.demote(4);
-        CHECK((anyShape4 == Shape{1, 2, 3, 4}));
-        anyShape4.demote(3);
-        CHECK((anyShape4 == Shape{1, 2, 3}));
-        anyShape4.demote(2);
-        CHECK((anyShape4 == Shape{1, 2}));
-        anyShape4.demote(1);
-        CHECK((anyShape4 == Shape{1}));
-        anyShape4.demote(0);
-        CHECK((anyShape4 == Shape{}));
+        AnyShape<4> anyShape4 = {1, 2, 3, 4};
+        CHECK(anyShape4 == Shape{1, 2, 3, 4});
     }
-    {
-        AnyShape<4> anyShape4{1, 2, 3, 4};
-        anyShape4.demote(1);
-        CHECK((anyShape4 == Shape{1}));
-        anyShape4.demote(0);
-        CHECK((anyShape4 == Shape{}));
-    }
-    {
-        AnyShape<4> anyShape3{1, 2, 3};
-        CHECK_THROWS(anyShape3.demote(4));
-    }
-    {
-        AnyShape<4> anyShape3{1, 2, 3};
-        CHECK_THROWS(anyShape3.demote(-1));
-    }
-    {
-        AnyShape<4> anyShape4{1, 2, 3, 4};
-        anyShape4.demote(2);
-        CHECK((anyShape4 == Shape{1, 2}));
-        CHECK_THROWS(anyShape4.demote(3));
+    SECTION("From static shape", "AnyShapes created with array initialization should equal the same set from static shape") {
+        AnyShape<4> anyShape0 = Shape{};
+        CHECK(anyShape0 == Shape{});
+
+        AnyShape<4> anyShape1 = Shape{1};
+        CHECK(anyShape1 == Shape{1});
+
+        AnyShape<4> anyShape2 = Shape{1, 2};
+        CHECK(anyShape2 == Shape{1, 2});
+
+        AnyShape<4> anyShape3 = Shape{1, 2, 3};
+        CHECK(anyShape3 == Shape{1, 2, 3});
+
+        AnyShape<4> anyShape4 = Shape{1, 2, 3, 4};
+        CHECK(anyShape4 == Shape{1, 2, 3, 4});
     }
 }
 
-TEST_CASE("AnyShape n_elems", "[Shape]"){
-    // Explicit shapes
-    STATIC_CHECK(AnyShape<5>{}.size() == 1);
-    STATIC_CHECK(AnyShape<5>{5}.size() == 5);
-    STATIC_CHECK(AnyShape<5>{5, 2}.size() == 10);
-    STATIC_CHECK(AnyShape<5>{5, 1, 1, 2, 3}.size() == 30);
+TEMPLATE_TEST_CASE("AnyShape construction from range", "[AnyShape][template]",
+                   (std::array<int, 4>), (std::array<size_t, 4>), std::vector<int>, std::vector<size_t>) {
+    GIVEN("A range of 4 values"){
+            TestType range = {1, 2, 3, 4};
 
-    // Implicit shapes
-    STATIC_CHECK(AnyShape<5>{-1}.size() == 1);
-    STATIC_CHECK(AnyShape<5>{-1, 2}.size() == 2);
-    STATIC_CHECK(AnyShape<5>{2, -1}.size() == 2);
-    STATIC_CHECK(AnyShape<5>{23, 4, 5, -1, 7}.size() == 3220);
+        THEN("The range has n_elems 4"){
+            REQUIRE(std::ranges::size(range) == 4);
+        }
+
+        WHEN("An AnyShape is created from that range"){
+            AnyShape<8> anyShape = AnyShape<8>{from_range, range};
+
+            THEN("The AnyShape also has n_elems 4"){
+                CHECK(anyShape.rank() == 4);
+                CHECK(std::ranges::size(anyShape) == 4);
+            }
+
+            THEN("The AnyShape has the same values") {
+                CHECK(anyShape[0] == 1);
+                CHECK(anyShape[1] == 2);
+                CHECK(anyShape[2] == 3);
+                CHECK(anyShape[3] == 4);
+            }
+        }
+
+        WHEN("An AnyShape smaller than that range is created from that range") {
+            THEN("It throws"){
+                CHECK_THROWS(AnyShape<3>{from_range, range});
+            }
+        }
+    }
+}
+
+SCENARIO("AnyShape can have variadic arguments emplaced", "[AnyShape]"){
+    GIVEN("An anyshape of size 4"){
+        AnyShape<4> anyShape;
+
+        WHEN("0 arguments are emplaced into it"){
+            anyShape.emplace();
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 0);
+                CHECK((anyShape == Shape{}));
+            }
+        }
+        WHEN("1 argument is emplaced into it"){
+            anyShape.emplace(1);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 1);
+                CHECK((anyShape == Shape{1}));
+            }
+        }
+        WHEN("2 arguments are emplaced into it"){
+            anyShape.emplace(1, 2);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 2);
+                CHECK((anyShape == Shape{1, 2}));
+            }
+        }
+        WHEN("3 arguments are emplaced into it"){
+            anyShape.emplace(1, 2, 3);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 3);
+                CHECK((anyShape == Shape{1, 2, 3}));
+            }
+        }
+        WHEN("4 arguments are emplaced into it"){
+            anyShape.emplace(1, 2, 3, 4);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 4);
+                CHECK((anyShape == Shape{1, 2, 3, 4}));
+            }
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("AnyShape emplacement from range", "[AnyShape][template]",
+                   (std::array<int, 4>), (std::array<size_t, 4>), std::vector<int>, std::vector<size_t>) {
+    GIVEN("A range of 4 values"){
+        TestType range = {1, 2, 3, 4};
+
+        THEN("The range has n_elems 4"){
+            REQUIRE(std::ranges::size(range) == 4);
+        }
+
+        WHEN("A range is emplaced into that AnyShape"){
+            AnyShape<8> anyShape {100, 200, 300, 400, 500, 600};
+            anyShape.emplace(from_range, range);
+
+            THEN("The AnyShape now also has n_elems 4"){
+                CHECK(anyShape.rank() == 4);
+                CHECK(std::ranges::size(anyShape) == 4);
+            }
+
+            THEN("The AnyShape has the same values") {
+                CHECK(anyShape[0] == 1);
+                CHECK(anyShape[1] == 2);
+                CHECK(anyShape[2] == 3);
+                CHECK(anyShape[3] == 4);
+            }
+        }
+
+        WHEN("An AnyShape smaller than that range is created from that range") {
+            AnyShape<3> anyShape {100, 200};
+
+            THEN("It throws"){
+                CHECK_THROWS(anyShape.emplace(from_range, range));
+            }
+        }
+    }
+}
+
+SCENARIO("AnyShape can create augmented with variadic arguments", "[AnyShape]"){
+    GIVEN("An anyshape of size 8, with rank 4"){
+        AnyShape<8> smallAnyShape {1, 2, 3, 4};
+        THEN("It has rank 4") {
+            REQUIRE(smallAnyShape.rank() == 4);
+        }
+
+        WHEN("0 arguments are augmented into it"){
+            auto anyShape = smallAnyShape.augmented();
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 4);
+                CHECK((anyShape == Shape{1, 2, 3, 4}));
+            }
+        }
+        WHEN("1 argument is augmented into it"){
+            auto anyShape = smallAnyShape.augmented(5);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 5);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5}));
+            }
+        }
+        WHEN("2 arguments are augmented into it"){
+            auto anyShape = smallAnyShape.augmented(5, 6);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 6);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5, 6}));
+            }
+        }
+        WHEN("3 arguments are augmented into it"){
+            auto anyShape = smallAnyShape.augmented(5, 6, 7);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 7);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5, 6, 7}));
+            }
+        }
+        WHEN("4 arguments are augmented into it"){
+            auto anyShape = smallAnyShape.augmented(5, 6, 7, 8);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 8);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5, 6, 7, 8}));
+            }
+        }
+        WHEN("5 arguments are augmented into it"){
+            THEN ("It throws"){
+                CHECK_THROWS(smallAnyShape.augmented(5, 6, 7, 8, 9));
+            }
+        }
+    }
+}
+
+SCENARIO("AnyShape can be augmented by variadic arguments", "[AnyShape]"){
+    GIVEN("An anyshape of size 8, with rank 4"){
+        AnyShape<8> anyShape {1, 2, 3, 4};
+
+        THEN("The anyShape has rank 4"){
+            REQUIRE(anyShape.rank() == 4);
+        }
+
+        WHEN("0 arguments are emplaced into it"){
+            anyShape.augment();
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 4);
+                CHECK((anyShape == Shape{1, 2, 3, 4}));
+            }
+        }
+        WHEN("1 argument is emplaced into it"){
+            anyShape.augment(5);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 5);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5}));
+            }
+        }
+        WHEN("2 arguments are emplaced into it"){
+            anyShape.augment(5, 6);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 6);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5, 6}));
+            }
+        }
+        WHEN("3 arguments are emplaced into it"){
+            anyShape.augment(5, 6, 7);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 7);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5, 6, 7}));
+            }
+        }
+        WHEN("4 arguments are emplaced into it"){
+            anyShape.augment(5, 6, 7, 8);
+            THEN ("It has those dimensions and rank"){
+                CHECK(anyShape.rank() == 8);
+                CHECK((anyShape == Shape{1, 2, 3, 4, 5, 6, 7, 8}));
+            }
+        }
+        WHEN("5 arguments are emplaced into it"){
+            THEN ("It throws"){
+                CHECK_THROWS(anyShape.augment(5, 6, 7, 8, 9));
+            }
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("AnyShape create augmented from a range", "[AnyShape][template]",
+                   (std::array<int, 4>), (std::array<size_t, 4>), std::vector<int>, std::vector<size_t>) {
+    GIVEN("A shape of rank 4 and a range of 4 values"){
+        AnyShape<8> smallAnyShape {1, 2, 3, 4};
+        TestType range = {5, 6, 7, 8};
+
+        THEN("The range has n_elems 4 and the shape has rank 4"){
+            REQUIRE(std::ranges::size(range) == 4);
+            REQUIRE(smallAnyShape.rank() == 4);
+        }
+
+        WHEN("The anyShape is augmented") {
+            auto anyShape = smallAnyShape.augmented(from_range, range);
+            THEN("The shape has the right rank and dimensions"){
+                CHECK(anyShape.rank() == 8);
+                CHECK(anyShape == Shape{1, 2, 3, 4, 5, 6, 7, 8});
+            }
+        }
+    }
+
+    GIVEN("A shape of rank 6 and a range of 4 values too large for that AnyShape"){
+        AnyShape<8> smallAnyShape {1, 2, 3, 4, 6, 7};
+        TestType range = {5, 6, 7, 8};
+
+        THEN("The range has n_elems 4 and the shape has rank 6"){
+            REQUIRE(std::ranges::size(range) == 4);
+            REQUIRE(smallAnyShape.rank() == 6);
+        }
+
+        WHEN("The anyShape is augmented") {
+            THEN("It throws"){
+                CHECK_THROWS(smallAnyShape.augmented(from_range, range));
+            }
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("AnyShape augment from a range", "[AnyShape][template]",
+                   (std::array<int, 4>), (std::array<size_t, 4>), std::vector<int>, std::vector<size_t>) {
+    GIVEN("A shape of rank 4 and a range of 4 values"){
+        AnyShape<8> anyShape {1, 2, 3, 4};
+        TestType range = {5, 6, 7, 8};
+
+        THEN("The range has n_elems 4 and the shape has rank 4"){
+            REQUIRE(std::ranges::size(range) == 4);
+            REQUIRE(anyShape.rank() == 4);
+        }
+
+        WHEN("The anyShape is augmented") {
+            anyShape.augment(from_range, range);
+            THEN("The shape has the right rank and dimensions"){
+                CHECK(anyShape.rank() == 8);
+                CHECK(anyShape == Shape{1, 2, 3, 4, 5, 6, 7, 8});
+            }
+        }
+    }
+
+    GIVEN("A shape of rank 6 and a range of 4 values too large for that AnyShape"){
+        AnyShape<8> anyShape {1, 2, 3, 4, 6, 7};
+        TestType range = {5, 6, 7, 8};
+
+        THEN("The range has n_elems 4 and the shape has rank 6"){
+            REQUIRE(std::ranges::size(range) == 4);
+            REQUIRE(anyShape.rank() == 6);
+        }
+
+        WHEN("The anyShape is augmented") {
+            THEN("It throws"){
+                CHECK_THROWS(anyShape.augment(from_range, range));
+            }
+        }
+    }
+}
+
+SCENARIO("AnyShape can create a demoted AnyShape", "[AnyShape]") {
+    GIVEN("An anyshape with 4 dimensions"){
+        AnyShape<8> largeAnyShape{1, 2, 3, 4};
+
+        THEN("The AnyShape has rank 4") {
+            REQUIRE(largeAnyShape.rank() == 4);
+        }
+
+        WHEN("The shape is demoted to rank 4"){
+            auto anyShape = largeAnyShape.demoted(4);
+            THEN ("The new shape has rank 4 and the same values") {
+                CHECK(anyShape.rank() == 4);
+                CHECK(anyShape == Shape{1, 2, 3, 4});
+            }
+        }
+        WHEN("The shape is demoted to rank 3"){
+            auto anyShape = largeAnyShape.demoted(3);
+            THEN ("The new shape has rank 3 and the same values") {
+                CHECK(anyShape.rank() == 3);
+                CHECK(anyShape == Shape{1, 2, 3});
+            }
+        }
+        WHEN("The shape is demoted to rank 2"){
+            auto anyShape = largeAnyShape.demoted(2);
+            THEN ("The new shape has rank 2 and the same values") {
+                CHECK(anyShape.rank() == 2);
+                CHECK(anyShape == Shape{1, 2});
+            }
+        }
+        WHEN("The shape is demoted to rank 1"){
+            auto anyShape = largeAnyShape.demoted(1);
+            THEN ("The new shape has rank 1 and the same values") {
+                CHECK(anyShape.rank() == 1);
+                CHECK(anyShape == Shape{1});
+            }
+        }
+        WHEN("The shape is demoted to rank 0"){
+            auto anyShape = largeAnyShape.demoted(0);
+            THEN ("The new shape has rank 0 and the same values") {
+                CHECK(anyShape.rank() == 0);
+                CHECK(anyShape == Shape{});
+            }
+        }
+        WHEN("The shape is demoted to rank 5"){
+            THEN ("It throws") {
+                CHECK_THROWS(largeAnyShape.demoted(5));
+            }
+        }
+    }
+}
+
+SCENARIO("AnyShape can be demoted", "[AnyShape]") {
+    GIVEN("An anyshape with 4 dimensions"){
+        AnyShape<8> anyShape{1, 2, 3, 4};
+
+        THEN("The AnyShape has rank 4") {
+            REQUIRE(anyShape.rank() == 4);
+        }
+
+        WHEN("The shape is demoted to rank 4"){
+            anyShape.demote(4);
+            THEN ("The new shape has rank 4 and the same values") {
+                CHECK(anyShape.rank() == 4);
+                CHECK(anyShape == Shape{1, 2, 3, 4});
+            }
+        }
+        WHEN("The shape is demoted to rank 3"){
+            anyShape.demote(3);
+            THEN ("The new shape has rank 3 and the same values") {
+                CHECK(anyShape.rank() == 3);
+                CHECK(anyShape == Shape{1, 2, 3});
+            }
+        }
+        WHEN("The shape is demoted to rank 2"){
+            anyShape.demote(2);
+            THEN ("The new shape has rank 2 and the same values") {
+                CHECK(anyShape.rank() == 2);
+                CHECK(anyShape == Shape{1, 2});
+            }
+        }
+        WHEN("The shape is demoted to rank 1"){
+            anyShape.demote(1);
+            THEN ("The new shape has rank 1 and the same values") {
+                CHECK(anyShape.rank() == 1);
+                CHECK(anyShape == Shape{1});
+            }
+        }
+        WHEN("The shape is demoted to rank 0"){
+            anyShape.demote(0);
+            THEN ("The new shape has rank 0 and the same values") {
+                CHECK(anyShape.rank() == 0);
+                CHECK(anyShape == Shape{});
+            }
+        }
+        WHEN("The shape is demoted to rank 5"){
+            THEN ("It throws") {
+                CHECK_THROWS(anyShape.demote(5));
+            }
+        }
+    }
+}
+
+TEST_CASE("AnyShape n_elems", "[AnyShape][static]"){
+    SECTION("Explicit shapes"){
+        STATIC_CHECK(AnyShape<6>{}.n_elems() == 1);
+        STATIC_CHECK(AnyShape<6>{5}.n_elems() == 5);
+        STATIC_CHECK(AnyShape<6>{5, 2}.n_elems() == 10);
+        STATIC_CHECK(AnyShape<6>{5, 1, 1, 2, 3}.n_elems() == 30);
+    }
+
+    SECTION("Implicit shapes"){
+        STATIC_CHECK(AnyShape<6>{-1}.n_elems() == 1);
+        STATIC_CHECK(AnyShape<6>{-1, 2}.n_elems() == 2);
+        STATIC_CHECK(AnyShape<6>{2, -1}.n_elems() == 2);
+        STATIC_CHECK(AnyShape<6>{23, 4, 5, -1, 7}.n_elems() == 3220);
+    }
+}
+
+TEST_CASE("AnyShape assignment from static shape", "[AnyShape]") {
+    GIVEN("An AnyShape"){
+        AnyShape<4> anyShape {100, 200, 300};
+
+        WHEN("It is assigned to a rank 0 shape"){
+            anyShape = Shape{};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 0);
+                CHECK(anyShape == Shape{});
+            }
+        }
+        WHEN("It is assigned to a rank 1 shape"){
+            anyShape = Shape{1};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 1);
+                CHECK(anyShape == Shape{1});
+            }
+        }
+        WHEN("It is assigned to a rank 2 shape"){
+            anyShape = Shape{1, 2};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 2);
+                CHECK(anyShape == Shape{1, 2});
+            }
+        }
+        WHEN("It is assigned to a rank 3 shape"){
+            anyShape = Shape{1, 2, 3};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 3);
+                CHECK(anyShape == Shape{1, 2, 3});
+            }
+        }
+        WHEN("It is assigned to a rank 4 shape"){
+            anyShape = Shape{1, 2, 3, 4};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 4);
+                CHECK(anyShape == Shape{1, 2, 3, 4});
+            }
+        }
+    }
+}
+
+TEST_CASE("AnyShape assignment from AnyShape", "[AnyShape]") {
+    GIVEN("An AnyShape"){
+        AnyShape<4> anyShape {100, 200, 300};
+
+        WHEN("It is assigned to a rank 0 AnyShape"){
+            anyShape = AnyShape<4>{};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 0);
+                CHECK(anyShape == Shape{});
+            }
+        }
+        WHEN("It is assigned to a rank 1 AnyShape"){
+            anyShape = AnyShape<4>{1};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 1);
+                CHECK(anyShape == Shape{1});
+            }
+        }
+        WHEN("It is assigned to a rank 2 AnyShape"){
+            anyShape = AnyShape<4>{1, 2};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 2);
+                CHECK(anyShape == Shape{1, 2});
+            }
+        }
+        WHEN("It is assigned to a rank 3 AnyShape"){
+            anyShape = AnyShape<4>{1, 2, 3};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 3);
+                CHECK(anyShape == Shape{1, 2, 3});
+            }
+        }
+        WHEN("It is assigned to a rank 4 AnyShape"){
+            anyShape = AnyShape<4>{1, 2, 3, 4};
+            THEN("It has the correct rank and dimensions"){
+                CHECK(anyShape.rank() == 4);
+                CHECK(anyShape == Shape{1, 2, 3, 4});
+            }
+        }
+    }
+}
+
+TEST_CASE("AnyShape equality to AnyShape", "[AnyShape]") {
+    CHECK(AnyShape<4>{} == AnyShape<4>{});
+    CHECK(AnyShape<4>{1, 2} == AnyShape<4>{1, 2});
+    CHECK(AnyShape<4>{1, 2, 3, 4} == AnyShape<4>{1, 2, 3, 4});
+
+    CHECK(AnyShape<4>{} == AnyShape<8>{});
+    CHECK(AnyShape<8>{} == AnyShape<4>{});
+
+    CHECK(AnyShape<4>{1, 2} == AnyShape<8>{1, 2});
+    CHECK(AnyShape<8>{1, 2} == AnyShape<4>{1, 2});
+
+    CHECK(AnyShape<4>{1, 2, 3, 4} == AnyShape<8>{1, 2, 3, 4});
+    CHECK(AnyShape<8>{1, 2, 3, 4} == AnyShape<4>{1, 2, 3, 4});
+}
+
+TEST_CASE("AnyShape equality to static shape", "[AnyShape]") {
+    CHECK(AnyShape<4>{} == Shape<0>{});
+    CHECK(AnyShape<4>{1, 2} == Shape<2>{1, 2});
+    CHECK(AnyShape<4>{1, 2, 3, 4} == Shape<4>{1, 2, 3, 4});
+
+    CHECK(AnyShape<4>{} == Shape<0>{});
+    CHECK(AnyShape<4>{1, 2} == Shape<2>{1, 2});
+    CHECK(AnyShape<4>{1, 2, 3, 4} == Shape<4>{1, 2, 3, 4});
+}
+
+TEST_CASE("AnyShape validity checks", "[AnyShape]") {
+    SECTION("Explicit AnyShapes"){
+        // Explicit shapes are valid explicit shapes
+        STATIC_CHECK(AnyShape<8>{}.isValidExplicit());
+        STATIC_CHECK(AnyShape<8>{5}.isValidExplicit());
+        STATIC_CHECK(AnyShape<8>{5, 2}.isValidExplicit());
+        STATIC_CHECK(AnyShape<8>{5, 1, 1, 2, 3}.isValidExplicit());
+
+        // Explicit shapes are not valid implicit shapes
+        STATIC_CHECK_FALSE(AnyShape<8>{}.isValidImplicit());
+        STATIC_CHECK_FALSE(AnyShape<8>{5}.isValidImplicit());
+        STATIC_CHECK_FALSE(AnyShape<8>{5, 2}.isValidImplicit());
+        STATIC_CHECK_FALSE(AnyShape<8>{5, 1, 1, 2, 3}.isValidImplicit());
+    }
+
+    SECTION("Implicit AnyShapes") {
+        // Implicit shapes are valid implicit shapes
+        STATIC_CHECK(AnyShape<8>{-1}.isValidImplicit());
+        STATIC_CHECK(AnyShape<8>{-1, 2}.isValidImplicit());
+        STATIC_CHECK(AnyShape<8>{2, -1}.isValidImplicit());
+        STATIC_CHECK(AnyShape<8>{23, 4, 5, -1, 7}.isValidImplicit());
+
+        // Implicit shapes are not valid explicit shapes
+        STATIC_CHECK_FALSE(AnyShape<8>{-1}.isValidExplicit());
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 2}.isValidExplicit());
+        STATIC_CHECK_FALSE(AnyShape<8>{2, -1}.isValidExplicit());
+        STATIC_CHECK_FALSE(AnyShape<8>{23, 4, 5, -1, 7}.isValidExplicit());
+    }
+
+    SECTION("Invalid AnyShapes"){
+        // Invalid shapes are not valid explicit
+        STATIC_CHECK_FALSE(AnyShape<8>{1, 0, 3}.isValidExplicit());           // contains 0
+        STATIC_CHECK_FALSE(AnyShape<8>{0}.isValidExplicit());                 // contains 0
+        STATIC_CHECK_FALSE(AnyShape<8>{0, 0, 0}.isValidExplicit());           // contains many 0s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, -1}.isValidExplicit());            // contains multiple -1s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 2, 3, -1, 4}.isValidExplicit());   // contains multiple -1s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 0, 1, 23, 4}.isValidExplicit());   // contains -1 and 0
+
+        // Invalid shapes are not valid implicit
+        STATIC_CHECK_FALSE(AnyShape<8>{1, 0, 3}.isValidImplicit());           // contains 0
+        STATIC_CHECK_FALSE(AnyShape<8>{0}.isValidImplicit());                 // contains 0
+        STATIC_CHECK_FALSE(AnyShape<8>{0, 0, 0}.isValidImplicit());           // contains many 0s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, -1}.isValidImplicit());            // contains multiple -1s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 2, 3, -1, 4}.isValidImplicit());   // contains multiple -1s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 0, 1, 23, 4}.isValidImplicit());   // contains -1 and 0
+
+        // Invalid shapes are not valid at all
+        STATIC_CHECK_FALSE(AnyShape<8>{1, 0, 3}.isValid());                   // contains 0
+        STATIC_CHECK_FALSE(AnyShape<8>{0}.isValid());                         // contains 0
+        STATIC_CHECK_FALSE(AnyShape<8>{0, 0, 0}.isValid());                   // contains many 0s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, -1}.isValid());                    // contains multiple -1s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 2, 3, -1, 4}.isValid());           // contains multiple -1s
+        STATIC_CHECK_FALSE(AnyShape<8>{-1, 0, 1, 23, 4}.isValid());           // contains -1 and 0
+    }
 }

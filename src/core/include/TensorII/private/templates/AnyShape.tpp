@@ -237,8 +237,10 @@ namespace TensorII::Core {
     template<tensorRank maxRank_>
     template<tensorRank otherMaxRank>
     constexpr bool AnyShape<maxRank_>::operator==(const AnyShape<otherMaxRank> &otherAnyShape) const {
-        if (this == &otherAnyShape){
-            return true;
+        if constexpr (maxRank_ == otherMaxRank){
+            if (this == &otherAnyShape) {
+                return true;
+            }
         }
         if (currRank != otherAnyShape.rank()) {
             return false;
@@ -251,11 +253,11 @@ namespace TensorII::Core {
     }
 
     template<tensorRank maxRank_>
-    constexpr tensorDimension AnyShape<maxRank_>::operator[](tensorRank i) const {
-        if (i >= currRank){
-            throw std::range_error("Index out of range");
+    constexpr tensorDimension AnyShape<maxRank_>::operator[](tensorRank axis) const {
+        if (axis >= currRank){
+            throw std::out_of_range("Index out of range");
         }
-        return (*shape<maxRank_>())[i];
+        return dimensions[axis];
     }
 
     template<tensorRank maxRank_>
@@ -269,7 +271,12 @@ namespace TensorII::Core {
     }
 
     template<tensorRank maxRank_>
-    constexpr tensorRank AnyShape<maxRank_>::size() const {
+    inline constexpr tensorRank AnyShape<maxRank_>::size() const {
+        return currRank;
+    }
+
+    template<tensorRank maxRank_>
+    constexpr tensorRank AnyShape<maxRank_>::n_elems() const {
         auto is_positive = [](tensorDimension d) { return d > 0; };
         auto positives = dimensions
                          | std::views::take(currRank)
@@ -301,6 +308,34 @@ namespace TensorII::Core {
     constexpr bool AnyShape<maxRank_>::isValid() const {
         return isValidExplicit() || isValidImplicit();
     }
+
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_>::ConstIterator AnyShape<maxRank_>::end() const {
+        if (currRank != 0) {
+            return ConstIterator(dimensions.data() + currRank);
+        }
+        return ConstIterator {dimensions.data()};
+    }
+
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_>::Iterator AnyShape<maxRank_>::end() {
+        if (currRank != 0) {
+            return Iterator(dimensions.data() + currRank);
+        }
+        return Iterator {dimensions.data()};
+    }
+
+
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_>::ConstIterator AnyShape<maxRank_>::begin() const {
+        return ConstIterator{dimensions.data()};
+    }
+
+    template<tensorRank maxRank_>
+    constexpr AnyShape<maxRank_>::Iterator AnyShape<maxRank_>::begin() {
+        return Iterator{dimensions.data()};
+    }
+
 }
 
 #endif //TENSOR_ANYSHAPE_TPP
