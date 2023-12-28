@@ -32,8 +32,12 @@ namespace TensorII::Core {
         using const_pointer = const value_type*;
 
         constexpr Tensor();
-        explicit constexpr Tensor(typename Private::TensorInitializer<DType, shape_>::Array&);
-        explicit constexpr Tensor(Private::TensorInitializer<DType, shape_>&&);
+
+        explicit constexpr Tensor(typename TensorInitializer<DType, shape_>::Array&);
+
+        /// Constructor from tensorInitializer used by toTensor function
+        /// and implicitly called from array initialization
+        explicit constexpr Tensor(TensorInitializer<DType, shape_>&&);
 
         template <Util::ContainerCompatibleRange<DType> Range>
         constexpr explicit Tensor(from_range_t, Range&&);

@@ -17,7 +17,7 @@ namespace TensorII::Core {
 
     template<Scalar DType, auto shape_>
     requires (derived_from_shape<decltype(shape_)>)
-    constexpr Tensor<DType, shape_>::Tensor(typename Private::TensorInitializer<DType, shape_>::Array &array) {
+    constexpr Tensor<DType, shape_>::Tensor(typename TensorInitializer<DType, shape_>::Array &array) {
         static_assert(sizeof(Array) == sizeof(decltype(array))); // assert c-array same size as std::array
         if (!std::is_constant_evaluated()){
             memmove_s(data_.data(), size_in_bytes(), array, size_in_bytes());
@@ -27,7 +27,7 @@ namespace TensorII::Core {
 
     template<Scalar DType, auto shape_>
     requires (derived_from_shape<decltype(shape_)>)
-    constexpr Tensor<DType, shape_>::Tensor(Private::TensorInitializer<DType, shape_> &&initializer)
+    constexpr Tensor<DType, shape_>::Tensor(TensorInitializer<DType, shape_> &&initializer)
             : Tensor<DType, shape_>::Tensor(from_range, initializer)
     {}
 

@@ -9,10 +9,19 @@
 #include <concepts>
 
 namespace TensorII::Core {
+//    template<typename T>
+//    concept Scalar
+//            = std::integral<T>
+//            || std::floating_point<T>;
+
     template<typename T>
     concept Scalar
-            = std::integral<T>
-            || std::floating_point<T>;
+    = requires (T a, T b) {
+        { a + b } -> std::same_as<T>;
+        { a - b } -> std::same_as<T>;
+        { a * b } -> std::same_as<T>;
+        { a / b } -> std::same_as<T>;
+    };
 
     template<typename Arr>
     concept ScalarArray
