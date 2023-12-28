@@ -82,7 +82,7 @@ namespace TensorII::Core {
         constexpr AnyShape(const Shape<rank_>& shape); // NOLINT(google-explicit-constructor)
 
         /// Initialize an AnyShape with dimensions from a range and rank equal to its length
-        /// Requires a sized range. If the n_elems of the range is greater than maxes, throws std::length_error
+        /// Requires a sized range. If the size of the range is greater than maxes, throws std::length_error
         template <Util::SizedContainerCompatibleRange<tensorDimension> Range>
         constexpr explicit AnyShape(from_range_t, Range&& range);
         // This could be made to use an un-sized array, I just didn't have a reason to
@@ -93,7 +93,7 @@ namespace TensorII::Core {
         AnyShape& emplace(const Dims ... dims);
 
         /// Set the dimensions of this AnyShape to the dimensions of a range and rank equal to its length
-        /// Requires a sized range. If the n_elems of the range is greater than the max, throws std::length_error
+        /// Requires a sized range. If the size of the range is greater than the max, throws std::length_error
         template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
         AnyShape& emplace(from_range_t, Range&& range);
         // This could be made to use an un-sized array, I just didn't have a reason to
@@ -105,26 +105,26 @@ namespace TensorII::Core {
         constexpr Shape<newRank> shape() const;
 
         /// Creates a new AnyShape, adding the pack arguments to the end of the this AnyShape's dimensions.
-        /// If the n_elems of the pack plus the current rank is greater than the max, throws std::length_error
+        /// If the size of the pack plus the current rank is greater than the max, throws std::length_error
         template <std::convertible_to<tensorDimension> ... Dims>
         [[nodiscard]]
         constexpr AnyShape<maxRank_> augmented(const Dims ... dims) const;
 
         /// Creates a new AnyShape, adding the pack arguments to the end of this AnyShape's dimensions.
-        /// If the n_elems of the pack plus the current rank is greater than the max, throws std::length_error
+        /// If the size of the pack plus the current rank is greater than the max, throws std::length_error
         template<Util::SizedContainerCompatibleRange<tensorDimension> Range>
         [[nodiscard]]
         constexpr AnyShape<maxRank_> augmented(from_range_t, Range&& range) const;
         // This could be made to use an un-sized array, I just didn't have a reason to
 
         /// Adds the pack arguments to the end of the AnyShape.
-        /// If the n_elems of the pack plus the current rank is greater than the max, throws std::length_error
+        /// If the size of the pack plus the current rank is greater than the max, throws std::length_error
         template <std::convertible_to<tensorDimension> ... Dims>
         void augment(const Dims ... dims);
 
         /// Adds the dimensions of the range to the end of this AnyShape.
         /// Requires a sized range.
-        /// If the n_elems of the range plus the current rank is greater than the max, throws std::length_error
+        /// If the size of the range plus the current rank is greater than the max, throws std::length_error
         template <Util::SizedContainerCompatibleRange<tensorDimension> Range>
         void augment(from_range_t, Range&& range);
 

@@ -88,14 +88,14 @@ TEMPLATE_TEST_CASE("Shape construction from range", "[Shape][template]",
     GIVEN("A range of 4 values"){
         TestType range = {1, 2, 3, 4};
 
-        THEN("The range has n_elems 4"){
+        THEN("The range has size 4"){
             REQUIRE(std::ranges::size(range) == 4);
         }
 
         WHEN("A shape is created from that range"){
             Shape<4> shape = Shape<4>{from_range, range};
 
-            THEN("The shape also has n_elems 4"){
+            THEN("The shape also has size 4"){
                 CHECK(shape.rank() == 4);
                 CHECK(std::ranges::size(shape) == 4);
             }
@@ -294,7 +294,7 @@ TEMPLATE_TEST_CASE("Shape augmented from range", "[Shape][template]",
         TestType range = {4, 5, 6, 7};
         Shape<3> smallShape = {1, 2, 3};
 
-        THEN("The range has size 4 and the shape has n_elems 3"){
+        THEN("The range has size 4 and the shape has size 3"){
             REQUIRE(std::ranges::size(range) == 4);
             REQUIRE(smallShape.rank() == 3);
         }
@@ -302,7 +302,7 @@ TEMPLATE_TEST_CASE("Shape augmented from range", "[Shape][template]",
         WHEN("A shape is created from that range"){
             Shape<7> shape = smallShape.augmented<7>(from_range, range);
 
-            THEN("The shape now has n_elems 7"){
+            THEN("The shape now has size 7"){
                 CHECK(shape.rank() == 7);
                 CHECK(std::ranges::size(shape) == 7);
             }

@@ -52,14 +52,14 @@ TEMPLATE_TEST_CASE("AnyShape construction from range", "[AnyShape][template]",
     GIVEN("A range of 4 values"){
             TestType range = {1, 2, 3, 4};
 
-        THEN("The range has n_elems 4"){
+        THEN("The range has size 4"){
             REQUIRE(std::ranges::size(range) == 4);
         }
 
         WHEN("An AnyShape is created from that range"){
             AnyShape<8> anyShape = AnyShape<8>{from_range, range};
 
-            THEN("The AnyShape also has n_elems 4"){
+            THEN("The AnyShape also has size 4"){
                 CHECK(anyShape.rank() == 4);
                 CHECK(std::ranges::size(anyShape) == 4);
             }
@@ -127,7 +127,7 @@ TEMPLATE_TEST_CASE("AnyShape emplacement from range", "[AnyShape][template]",
     GIVEN("A range of 4 values"){
         TestType range = {1, 2, 3, 4};
 
-        THEN("The range has n_elems 4"){
+        THEN("The range has size 4"){
             REQUIRE(std::ranges::size(range) == 4);
         }
 
@@ -135,7 +135,7 @@ TEMPLATE_TEST_CASE("AnyShape emplacement from range", "[AnyShape][template]",
             AnyShape<8> anyShape {100, 200, 300, 400, 500, 600};
             anyShape.emplace(from_range, range);
 
-            THEN("The AnyShape now also has n_elems 4"){
+            THEN("The AnyShape now also has size 4"){
                 CHECK(anyShape.rank() == 4);
                 CHECK(std::ranges::size(anyShape) == 4);
             }
@@ -265,7 +265,7 @@ TEMPLATE_TEST_CASE("AnyShape create augmented from a range", "[AnyShape][templat
         AnyShape<8> smallAnyShape {1, 2, 3, 4};
         TestType range = {5, 6, 7, 8};
 
-        THEN("The range has n_elems 4 and the shape has rank 4"){
+        THEN("The range has size 4 and the shape has rank 4"){
             REQUIRE(std::ranges::size(range) == 4);
             REQUIRE(smallAnyShape.rank() == 4);
         }
@@ -283,7 +283,7 @@ TEMPLATE_TEST_CASE("AnyShape create augmented from a range", "[AnyShape][templat
         AnyShape<8> smallAnyShape {1, 2, 3, 4, 6, 7};
         TestType range = {5, 6, 7, 8};
 
-        THEN("The range has n_elems 4 and the shape has rank 6"){
+        THEN("The range has size 4 and the shape has rank 6"){
             REQUIRE(std::ranges::size(range) == 4);
             REQUIRE(smallAnyShape.rank() == 6);
         }
@@ -302,7 +302,7 @@ TEMPLATE_TEST_CASE("AnyShape augment from a range", "[AnyShape][template]",
         AnyShape<8> anyShape {1, 2, 3, 4};
         TestType range = {5, 6, 7, 8};
 
-        THEN("The range has n_elems 4 and the shape has rank 4"){
+        THEN("The range has size 4 and the shape has rank 4"){
             REQUIRE(std::ranges::size(range) == 4);
             REQUIRE(anyShape.rank() == 4);
         }
@@ -320,7 +320,7 @@ TEMPLATE_TEST_CASE("AnyShape augment from a range", "[AnyShape][template]",
         AnyShape<8> anyShape {1, 2, 3, 4, 6, 7};
         TestType range = {5, 6, 7, 8};
 
-        THEN("The range has n_elems 4 and the shape has rank 6"){
+        THEN("The range has size 4 and the shape has rank 6"){
             REQUIRE(std::ranges::size(range) == 4);
             REQUIRE(anyShape.rank() == 6);
         }
