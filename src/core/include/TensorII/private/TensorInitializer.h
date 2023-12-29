@@ -16,6 +16,7 @@
 
 namespace TensorII::Core::Private {
 
+    // Returns a DTypes array of that shape. I.e. long and Shape{2, 3, 7} -> long[2][3][7]
     template <typename DType, auto shape>
     requires (derived_from_shape<decltype(shape)>)
     struct ShapeToArray {
@@ -27,19 +28,18 @@ namespace TensorII::Core::Private {
         using type = DType;
     };
 
-    template <typename DType, auto shape>
-    using ShapeToArray_t = ShapeToArray<DType, shape>::type;
-
+    // End of recursion: when the index value is a value type and not an array
     template <typename DType, typename NotArray, size_t rank>
     requires(std::is_same_v<DType, NotArray>)
     constexpr const DType* at(const DType* value,
                               const std::array<size_t, rank>&,
                               tensorRank = 0){
-        if (not std::is_constant_evaluated() and false)
+        if (not std::is_constant_evaluated())
             throw std::logic_error("You really, REALLY, shouldn't use this function at runtime");
         return value;
     }
 
+    // Recurse while the indexed value is still an array
     template <typename DType, typename Array, size_t rank>
     constexpr const DType* at(const Array* array,
                               const std::array<size_t, rank>& indecies,
@@ -51,9 +51,14 @@ namespace TensorII::Core::Private {
 
         // Index the array in the current axis, by the current axis in the indecies array
         // recurse to index the next axis
-        return at<DType, typename std::remove_extent_t<Array>, rank>(&((*array)[indecies[axis]]), indecies, axis + 1);
+        return at<DType, std::remove_extent_t<Array>, rank>(&((*array)[indecies[axis]]), indecies, axis + 1);
         // It's not recursion at runtime at least. ¯\_('_')_/¯
         // Sorry, compilers of the world
+
+        // &((*array)[indecies[axis]]) not array[indecies[axis]]
+        // Array is a pointer to an array (not an array pointer), so must be dereferenced before indexing
+        // It's a pointer to array to make it more uniform in that you always reference it when you pass to at()
+        // Otherwise you'd have to selectively reference if it's a value type, but not if it's an array.
     }
 
 
@@ -61,7 +66,7 @@ namespace TensorII::Core::Private {
     class TensorInitializer{
         friend class Tensor<DType, shape>;
 
-        using SubArray = ShapeToArray_t<DType, shape>;
+        using SubArray = ShapeToArray<DType, shape>::type;
         // For 0-tensor initializer, just use a DType instead of a DType array
         using Array = std::conditional_t<std::is_array_v<SubArray>, const SubArray&, SubArray>;
         using ArrayPtr = const SubArray*;
@@ -115,11 +120,13 @@ namespace TensorII::Core::Private {
                     if (curr_axis == -1) {
                         ptr = nullptr; // denotes end
                     } else {
+                        // Index the array by the indecies in indecies,
+                        // i.e. indecies = {2, 3, 7} -> ptr = &underlyingArray[2][3][7]
                         ptr = at<DType, SubArray, shape.rank()>(underlyingArray, indecies);
                     }
-                } else {
-                    ++ptr;
+                    return *this;
                 }
+                ++ptr;
                 return *this;
             }
 
