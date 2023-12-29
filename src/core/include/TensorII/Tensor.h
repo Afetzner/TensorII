@@ -33,7 +33,7 @@ namespace TensorII::Core {
 
         constexpr Tensor();
 
-        explicit constexpr Tensor(typename TensorInitializer<DType, shape_>::Array&);
+        explicit constexpr Tensor(typename TensorInitializer<DType, shape_>::Array&&);
 
         /// Constructor from tensorInitializer used by toTensor function
         /// and implicitly called from array initialization

@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <exception>
 #include <optional>
+#include <format>
 #include "TensorII/private/Tensor_predecl.h"
 #include "TensorII/Shape.h"
 #include "TensorII/TensorDType.h"
@@ -15,109 +16,83 @@
 
 namespace TensorII::Core::Private {
 
-    template<Scalar, Shape, tensorRank axis = 0>
-    struct TensorInitializer;
+    template <typename DType, auto shape>
+    requires (derived_from_shape<decltype(shape)>)
+    struct ShapeToArray {
+        using type = ShapeToArray<DType, ShapeTail(shape)>::type [shape[0]];
+    };
 
-    //region TensorInitializer Definitions
-    // 0 dimensions
-    template<Scalar DType>
-    class TensorInitializer<DType, Shape<0>{}, 0> {
-        template <Scalar, Shape, tensorRank> friend class TensorInitializer;
-        friend class TensorII::Core::Tensor<DType, Shape<0>{}>;
+    template <typename DType>
+    struct ShapeToArray<DType, Shape{}> {
+        using type = DType;
+    };
 
-        const DType value;
-        using Array = DType;
+    template <typename DType, auto shape>
+    using ShapeToArray_t = ShapeToArray<DType, shape>::type;
 
-        class Iterator{
+    template <typename DType, typename NotArray, size_t rank>
+    requires(std::is_same_v<DType, NotArray>)
+    constexpr const DType* at(const DType* value,
+                              const std::array<size_t, rank>&,
+                              tensorRank = 0){
+        if (not std::is_constant_evaluated() and false)
+            throw std::logic_error("You really, REALLY, shouldn't use this function at runtime");
+        return value;
+    }
+
+    template <typename DType, typename Array, size_t rank>
+    constexpr const DType* at(const Array* array,
+                              const std::array<size_t, rank>& indecies,
+                              tensorRank axis = 0)
+    requires(std::is_array_v<Array>)
+    {
+        if (not std::is_constant_evaluated())
+            throw std::logic_error("You really, REALLY, shouldn't use this function at runtime");
+
+        // Index the array in the current axis, by the current axis in the indecies array
+        // recurse to index the next axis
+        return at<DType, typename std::remove_extent_t<Array>, rank>(&((*array)[indecies[axis]]), indecies, axis + 1);
+        // It's not recursion at runtime at least. ¯\_('_')_/¯
+        // Sorry, compilers of the world
+    }
+
+
+    template<Scalar DType, Shape shape>
+    class TensorInitializer{
+        friend class Tensor<DType, shape>;
+
+        using SubArray = ShapeToArray_t<DType, shape>;
+        // For 0-tensor initializer, just use a DType instead of a DType array
+        using Array = std::conditional_t<std::is_array_v<SubArray>, const SubArray&, SubArray>;
+        using ArrayPtr = const SubArray*;
+        Array values;
+
+        class Iterator {
         public:
+            using end_t = std::integral_constant<bool, true>;
+            static constexpr end_t at_end = end_t {};
+
             using iterator_category = std::forward_iterator_tag;
             using value_type        = DType;
             using difference_type   = std::ptrdiff_t;
             using pointer           = const DType *;
             using reference         = const DType &;
 
-            explicit constexpr Iterator(const DType* ptr = nullptr) : m_ptr(ptr) {}
-            reference operator*() const { return *m_ptr; }
-            pointer operator->() { return m_ptr; }
-            Iterator& operator++() { m_ptr++; return *this; }
-            Iterator operator++(int) { Iterator tmp = *this; ++(*this); return tmp; } // NOLINT(cert-dcl21-cpp)
-            friend bool operator== (const Iterator& a, const Iterator& b) { return a.m_ptr == b.m_ptr; };
-            friend bool operator!= (const Iterator& a, const Iterator& b) { return a.m_ptr != b.m_ptr; };
-        private:
-            pointer m_ptr;
-        };
+            explicit constexpr Iterator(ArrayPtr arr = nullptr)
+                    : underlyingArray(arr)
+                    , indecies{}
+                    , ptr(std::is_constant_evaluated()
+                        ? at<DType, SubArray, shape.rank()>(underlyingArray, {})
+                        : reinterpret_cast<const DType *>(arr))
+            {}
 
-    public:
-        constexpr TensorInitializer(DType value) // NOLINT(google-explicit-constructor)
-        : value(value) {};
-
-        [[nodiscard]]
-        constexpr Iterator begin() const { return Iterator{&value}; }
-        [[nodiscard]]
-        constexpr Iterator end()   const { return Iterator{(&value) + 1}; }
-        constexpr size_t size() { return 1; }
-};
-
-    template<Scalar DType, Shape shape, tensorRank axis>
-    requires (shape.rank() > 0 && axis == shape.rank())
-    struct TensorInitializer<DType, shape, axis> {
-    private:
-        template <Scalar, Shape, tensorRank> friend class TensorInitializer;
-
-        using Array = DType;
-        static constexpr const DType* at(const DType& value, const std::array<size_t, shape.rank()>& indecies){
-            if (not std::is_constant_evaluated())
-                throw std::logic_error("Don't use this at runtime, fool!");
-            return &value;
-        }
-    };
-
-    // >1 dimension
-    template<Scalar DType, Shape shape, tensorRank axis>
-    requires (shape.rank() > 0 && axis < shape.rank())
-    struct TensorInitializer<DType, shape, axis> {
-    private:
-        template <Scalar, Shape, tensorRank> friend class TensorInitializer;
-        friend class Tensor<DType, shape>;
-
-        using LowerArray = typename TensorInitializer<DType, shape, axis + 1>::Array;
-        using Array = LowerArray const [shape[axis]];
-        const Array& values;
-
-        static constexpr const DType* at(const typename TensorInitializer<DType, shape, axis>::Array& array,
-                                   const std::array<size_t, shape.rank()>& indecies){
-            if (not std::is_constant_evaluated())
-                throw std::logic_error("Don't use this at runtime, fool!");
-
-            // Index the array in the current axis, by the current axis in the indecies array
-            // recurse to index the next axis
-            return TensorInitializer<DType, shape, axis + 1>::at(array[indecies[axis]], indecies);
-            // It's not technically recursion. Also, there's no runtime cost. ¯\_('_')_/¯
-        }
-
-        class Iterator{
-        public:
-            static_assert(axis == 0);
-            using end_t = std::integral_constant<bool, true>;
-            static constexpr end_t at_end = end_t {};
-
-            using iterator_category = std::random_access_iterator_tag;
-            using value_type        = DType;
-            using difference_type   = std::ptrdiff_t;
-            using pointer           = const DType *;
-            using reference         = const DType &;
-
-            explicit constexpr Iterator(const Array* arr = nullptr)
-                : underlying(arr)
-                , indecies{}
-                , ptr(std::is_constant_evaluated() ? at(*underlying, {}) : reinterpret_cast<const DType *>(arr))
-                {}
-
-            explicit constexpr Iterator(const Array* arr, end_t)
-                : underlying(arr)
-                , indecies{}
-                , ptr(std::is_constant_evaluated() ? nullptr : reinterpret_cast<const DType *>(arr) + shape.n_elems())
-                {}
+            explicit constexpr Iterator(ArrayPtr arr, end_t)
+                    : underlyingArray(arr)
+                    , indecies{}
+                    , ptr(std::is_constant_evaluated()
+                        ? nullptr
+                        : reinterpret_cast<const DType *>(arr) + shape.n_elems())
+            {}
 
             constexpr reference operator*() const { return *ptr; }
             constexpr pointer operator->() { return ptr; }
@@ -128,22 +103,22 @@ namespace TensorII::Core::Private {
                     // In runtime memory model, this is trivial
                     // In consteval, "memory" is not continuous, so I have to explicit index the next element
                     size_t curr_axis;
-                    bool keep_going = true;
                     // Imagine a wonky carry-adder, where the maxes of the columns are the shape
-                    for(curr_axis = shape.rank(); keep_going and curr_axis-- != 0; /* nothing */) {
-                        indecies[curr_axis]++;
+                    for(curr_axis = shape.rank(); curr_axis-- != 0; /* nothing */) {
+                        ++indecies[curr_axis];
                         if (indecies[curr_axis] == shape[curr_axis]) {
                             indecies[curr_axis] = 0;
                         } else {
-                            keep_going = false;
+                            break;
                         }
-                        ptr = at(*underlying, indecies);
                     }
-                    if (keep_going) {
+                    if (curr_axis == -1) {
                         ptr = nullptr; // denotes end
+                    } else {
+                        ptr = at<DType, SubArray, shape.rank()>(underlyingArray, indecies);
                     }
                 } else {
-                    ptr++;
+                    ++ptr;
                 }
                 return *this;
             }
@@ -162,14 +137,15 @@ namespace TensorII::Core::Private {
             };
 
         private:
-            const Array* underlying;
+            ArrayPtr underlyingArray;
             std::array<size_t, shape.rank()> indecies;
             pointer ptr;
         };
 
     public:
-        constexpr TensorInitializer(const Array& values) // NOLINT(google-explicit-constructor)
-        : values(values) {};
+        constexpr TensorInitializer(Array values) // NOLINT(google-explicit-constructor)
+            : values(values)
+        {};
 
         [[nodiscard]]
         constexpr Iterator begin() const { return Iterator(&values); };
@@ -177,7 +153,6 @@ namespace TensorII::Core::Private {
         constexpr Iterator end() const { return Iterator(&values, Iterator::at_end); };
         constexpr size_t size() { return shape.n_elems(); }
     };
-    //endregion TensorInitializer Definitions
 }
 
 

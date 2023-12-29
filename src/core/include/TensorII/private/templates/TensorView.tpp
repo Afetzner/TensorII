@@ -47,17 +47,21 @@ namespace TensorII::Core {
         requires (derived_from_static_shape<decltype(apparentShape)>)
     constexpr TensorView<UnderlyingTensor, apparentShape, index_>::
     TensorView(Tensor<element_type, apparentShape> &source)
-    requires(apparentShape == source.shape())
     : source (source.data())
     , indecies {}
-    {}
+    {
+        if (apparentShape == source.shape()){
+            // I should probably use a more specific error type here
+            throw std::logic_error("Creating a tensor view from a tensor who's shape does not match");
+        }
+    }
 
     template<derived_from_tensor UnderlyingTensor, auto apparentShape, tensorRank index_>
         requires (derived_from_static_shape<decltype(apparentShape)>)
     constexpr TensorView<UnderlyingTensor, ShapeTail(apparentShape), index_>
     TensorView<UnderlyingTensor, apparentShape, index_>::
     operator[](Single single) {
-        static constexpr auto restShape = ShapeTail(apparentShape);
+        constexpr auto restShape = ShapeTail(apparentShape);
         using NewTensorView = TensorView<UnderlyingTensor, restShape, index_>;
         element_type* newSource = &source[single.single() * restShape.n_elems()];
         return NewTensorView{newSource,
@@ -95,7 +99,7 @@ namespace TensorII::Core {
     TensorView<UnderlyingTensor, apparentShape, index_>::
     slice()
     {
-        static constexpr auto newShape = apparentShape.replace(index_, triple.count(apparentShape[0]));
+        constexpr auto newShape = apparentShape.replace(index_, triple.count(apparentShape[0]));
         using NewTensorView = TensorView<UnderlyingTensor, newShape, index_ + 1>;
         return NewTensorView {source,
                               indecies | std::ranges::views::take(index_),

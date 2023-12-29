@@ -64,8 +64,7 @@ namespace TensorII::Core {
         constexpr explicit TensorView(element_type* source, const Range&& range, TensorIndex index);
 
     public:
-        constexpr TensorView(Tensor<element_type, apparentShape>& source)  // NOLINT(google-explicit-constructor)
-        requires(apparentShape == source.shape());
+        constexpr TensorView(Tensor<element_type, apparentShape>& source);  // NOLINT(google-explicit-constructor)
 
         static constexpr tensorRank rank() { return apparentShape.rank(); }
 
@@ -88,7 +87,7 @@ namespace TensorII::Core {
 
 
     template<Scalar DType, auto shape>
-    TensorView(Tensor<DType, shape>) -> TensorView<Tensor<DType, shape>, shape, 0>;
+    TensorView(const Tensor<DType, shape>&) -> TensorView<Tensor<DType, shape>, shape, 0>;
 
     //end region Static shape specialization
 
