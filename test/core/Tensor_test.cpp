@@ -178,7 +178,7 @@ SCENARIO("A Tensor can be initialized using an array", "[Tensor]"){
     }
 }
 
-/*
+
 SCENARIO("A Tensor can be initialized using an array in a constant expression", "[Tensor][static]"){
     WHEN("A 0-tensor is initialized by array initialization") {
         constexpr Tensor tensor = Tensor<int, Shape{}> {42};
@@ -221,38 +221,9 @@ SCENARIO("A Tensor can be initialized using an array in a constant expression", 
         }
     }
 
-    WHEN("A 2-tensor is initialized by passing an array for initialization") {
-        constexpr Tensor tensor = Tensor<int, Shape{4, 3}> ({{00, 01, 02},
-                                                             {10, 11, 12},
-                                                             {20, 21, 22},
-                                                             {30, 31, 32}});
-        THEN("It has rank 2") {
-            STATIC_CHECK(tensor.rank() == 2);
-        }
-        THEN("It has the correct shape") {
-            STATIC_CHECK(tensor.shape() == Shape{4, 3});
-        }
-        THEN("It has the correct size") {
-            STATIC_CHECK(tensor.size() == 4 * 3);
-        }
-        THEN("It has the correct size in bytes") {
-            STATIC_CHECK(tensor.size_in_bytes() == 4 * 3 * sizeof(int));
-        }
-        THEN("It contains the correct numbers") {
-//            STATIC_CHECK(tensor.data()[0]  == 00);
-//            STATIC_CHECK(tensor.data()[1]  == 01);
-//            STATIC_CHECK(tensor.data()[2]  == 02);
-//            STATIC_CHECK(tensor.data()[3]  == 10);
-//            STATIC_CHECK(tensor.data()[4]  == 11);
-//            STATIC_CHECK(tensor.data()[5]  == 12);
-//            STATIC_CHECK(tensor.data()[6]  == 20);
-//            STATIC_CHECK(tensor.data()[7]  == 21);
-//            STATIC_CHECK(tensor.data()[8]  == 22);
-//            STATIC_CHECK(tensor.data()[9]  == 30);
-//            STATIC_CHECK(tensor.data()[10] == 31);
-//            STATIC_CHECK(tensor.data()[11] == 32);
-        }
-    }
+    // WHEN("A 2-tensor is initialized by passing an r-value array for initialization")
+    // Not yet supported;
+
 
     WHEN("A 2-tensor is initialized by passing an l-value array for initialization") {
         constexpr int arr[4][3] = {{00, 01, 02},
@@ -288,39 +259,17 @@ SCENARIO("A Tensor can be initialized using an array in a constant expression", 
         }
     }
 
-    WHEN("A 3-tensor is initialized by passing an array for initialization") {
-        constexpr Tensor tensor = Tensor<int, Shape{3, 2, 1}> ({{{000}, {010}},
-                                                                {{100}, {110}},
-                                                                {{200}, {210}}});
-        THEN("It has rank 3") {
-            STATIC_CHECK(tensor.rank() == 3);
-        }
-        THEN("It has the correct shape") {
-            STATIC_CHECK(tensor.shape() == Shape{3, 2, 1});
-        }
-        THEN("It has the correct size") {
-            STATIC_CHECK(tensor.size() == 3 * 2 * 1);
-        }
-        THEN("It has the correct size in bytes") {
-            STATIC_CHECK(tensor.size_in_bytes() == 3 * 2 * 1 * sizeof(int));
-        }
-        THEN("It contains the correct numbers") {
-//            STATIC_CHECK(tensor.data()[0]  == 000);
-//            STATIC_CHECK(tensor.data()[1]  == 010);
-//            STATIC_CHECK(tensor.data()[2]  == 100);
-//            STATIC_CHECK(tensor.data()[3]  == 110);
-//            STATIC_CHECK(tensor.data()[4]  == 200);
-//            STATIC_CHECK(tensor.data()[5]  == 210);
-        }
-    }
+    // WHEN("A 3-tensor is initialized by passing an r-value array for initialization")
+    // Not yet supported
 
-    WHEN("A 4-tensor is initialized by passing an array for initialization") {
-        constexpr Tensor tensor = Tensor<int, Shape{2, 3, 2, 1}> ({{{{0000}, {0010}},
-                                                                    {{0100}, {0110}},
-                                                                    {{0200}, {0210}}},
-                                                                   {{{1000}, {1010}},
-                                                                    {{1100}, {1110}},
-                                                                    {{1200}, {1210}}}});
+    WHEN("A 4-tensor is initialized by passing an l-value array for initialization") {
+        constexpr int arr[2][3][2][1] {{{{0000}, {0010}},
+                                        {{0100}, {0110}},
+                                        {{0200}, {0210}}},
+                                       {{{1000}, {1010}},
+                                        {{1100}, {1110}},
+                                        {{1200}, {1210}}}};
+        constexpr Tensor tensor = Tensor<int, Shape{2, 3, 2, 1}> (arr);
         THEN("It has rank 4") {
             STATIC_CHECK(tensor.rank() == 4);
         }
@@ -334,22 +283,24 @@ SCENARIO("A Tensor can be initialized using an array in a constant expression", 
             STATIC_CHECK(tensor.size_in_bytes() == 2 * 3 * 2 * 1 * sizeof(int));
         }
         THEN("It contains the correct numbers") {
-//            STATIC_CHECK(tensor.data()[0]   == 0000);
-//            STATIC_CHECK(tensor.data()[1]   == 0010);
-//            STATIC_CHECK(tensor.data()[2]   == 0100);
-//            STATIC_CHECK(tensor.data()[3]   == 0110);
-//            STATIC_CHECK(tensor.data()[4]   == 0200);
-//            STATIC_CHECK(tensor.data()[5]   == 0210);
-//            STATIC_CHECK(tensor.data()[6]   == 1000);
-//            STATIC_CHECK(tensor.data()[7]   == 1010);
-//            STATIC_CHECK(tensor.data()[8]   == 1100);
-//            STATIC_CHECK(tensor.data()[9]   == 1110);
-//            STATIC_CHECK(tensor.data()[10]  == 1200);
-//            STATIC_CHECK(tensor.data()[11]  == 1210);
+            STATIC_CHECK(tensor.data()[0]   == 0000);
+            STATIC_CHECK(tensor.data()[1]   == 0010);
+            STATIC_CHECK(tensor.data()[2]   == 0100);
+            STATIC_CHECK(tensor.data()[3]   == 0110);
+            STATIC_CHECK(tensor.data()[4]   == 0200);
+            STATIC_CHECK(tensor.data()[5]   == 0210);
+            STATIC_CHECK(tensor.data()[6]   == 1000);
+            STATIC_CHECK(tensor.data()[7]   == 1010);
+            STATIC_CHECK(tensor.data()[8]   == 1100);
+            STATIC_CHECK(tensor.data()[9]   == 1110);
+            STATIC_CHECK(tensor.data()[10]  == 1200);
+            STATIC_CHECK(tensor.data()[11]  == 1210);
         }
     }
+
+    // WHEN("A 4-tensor is initialized by passing an r-value array for initialization")
+    // Not yet supported
 }
-*/
 
 SCENARIO("A Tensor can be initialized using toTensor", "[Tensor]"){
     WHEN("A 0-tensor is initialized with toTensor") {

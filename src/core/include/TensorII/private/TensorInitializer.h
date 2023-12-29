@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <exception>
 #include <optional>
-#include <format>
+#include <cassert>
 #include "TensorII/private/Tensor_predecl.h"
 #include "TensorII/Shape.h"
 #include "TensorII/TensorDType.h"
@@ -51,7 +51,7 @@ namespace TensorII::Core::Private {
 
         // Index the array in the current axis, by the current axis in the indecies array
         // recurse to index the next axis
-        return at<DType, std::remove_extent_t<Array>, rank>(&((*array)[indecies[axis]]), indecies, axis + 1);
+        return at<DType, std::remove_extent_t<Array>, rank>(&(*array)[indecies[axis]], indecies, axis + 1);
         // It's not recursion at runtime at least. ¯\_('_')_/¯
         // Sorry, compilers of the world
 
@@ -66,11 +66,9 @@ namespace TensorII::Core::Private {
     class TensorInitializer{
         friend class Tensor<DType, shape>;
 
-        using SubArray = ShapeToArray<DType, shape>::type;
+        using Array = typename ShapeToArray<DType, shape>::type;
         // For 0-tensor initializer, just use a DType instead of a DType array
-        using Array = std::conditional_t<std::is_array_v<SubArray>, const SubArray&, SubArray>;
-        using ArrayPtr = const SubArray*;
-        Array values;
+        const Array* values;
 
         class Iterator {
         public:
@@ -83,17 +81,19 @@ namespace TensorII::Core::Private {
             using pointer           = const DType *;
             using reference         = const DType &;
 
-            explicit constexpr Iterator(ArrayPtr arr = nullptr)
+            explicit constexpr Iterator(const Array* arr = nullptr)
                     : underlyingArray(arr)
                     , indecies{}
+                    , end(false)
                     , ptr(std::is_constant_evaluated()
-                        ? at<DType, SubArray, shape.rank()>(underlyingArray, {})
+                        ? at<DType, Array, shape.rank()>(underlyingArray, {})
                         : reinterpret_cast<const DType *>(arr))
             {}
 
-            explicit constexpr Iterator(ArrayPtr arr, end_t)
+            explicit constexpr Iterator(const Array* arr, end_t)
                     : underlyingArray(arr)
                     , indecies{}
+                    , end(true)
                     , ptr(std::is_constant_evaluated()
                         ? nullptr
                         : reinterpret_cast<const DType *>(arr) + shape.n_elems())
@@ -107,9 +107,11 @@ namespace TensorII::Core::Private {
                     // Need to increment the pointer by 1,
                     // In runtime memory model, this is trivial
                     // In consteval, "memory" is not continuous, so I have to explicit index the next element
-                    size_t curr_axis;
+                    size_t i;
+                    tensorRank rank = shape.rank();
                     // Imagine a wonky carry-adder, where the maxes of the columns are the shape
-                    for(curr_axis = shape.rank(); curr_axis-- != 0; /* nothing */) {
+                    for(i = 0; i < rank; i++) {
+                        size_t curr_axis = rank - i - 1;
                         ++indecies[curr_axis];
                         if (indecies[curr_axis] == shape[curr_axis]) {
                             indecies[curr_axis] = 0;
@@ -117,12 +119,12 @@ namespace TensorII::Core::Private {
                             break;
                         }
                     }
-                    if (curr_axis == -1) {
-                        ptr = nullptr; // denotes end
+                    if (i == rank){
+                        ptr = nullptr;
+                        end = true;
                     } else {
-                        // Index the array by the indecies in indecies,
                         // i.e. indecies = {2, 3, 7} -> ptr = &underlyingArray[2][3][7]
-                        ptr = at<DType, SubArray, shape.rank()>(underlyingArray, indecies);
+                        ptr = at<DType, Array, shape.rank()>(underlyingArray, indecies);
                     }
                     return *this;
                 }
@@ -136,28 +138,29 @@ namespace TensorII::Core::Private {
             }
 
             constexpr friend bool operator== (const Iterator& a, const Iterator& b) {
-                return a.ptr == b.ptr;
+                return a.ptr == b.ptr || (a.underlyingArray == b.underlyingArray && a.end && b.end);
             };
 
             constexpr friend bool operator!= (const Iterator& a, const Iterator& b) {
-                return a.ptr != b.ptr;
+                return !(a == b);
             };
 
         private:
-            ArrayPtr underlyingArray;
+            const Array* underlyingArray;
             std::array<size_t, shape.rank()> indecies;
             pointer ptr;
+            bool end;
         };
 
     public:
-        constexpr TensorInitializer(Array values) // NOLINT(google-explicit-constructor)
-            : values(values)
+        constexpr TensorInitializer(const Array& values) // NOLINT(google-explicit-constructor)
+            : values (&values)
         {};
 
         [[nodiscard]]
-        constexpr Iterator begin() const { return Iterator(&values); };
+        constexpr Iterator begin() const { return Iterator(values); };
         [[nodiscard]]
-        constexpr Iterator end() const { return Iterator(&values, Iterator::at_end); };
+        constexpr Iterator end() const { return Iterator(values, Iterator::at_end); };
         constexpr size_t size() { return shape.n_elems(); }
     };
 }

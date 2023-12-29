@@ -33,11 +33,12 @@ namespace TensorII::Core {
 
         constexpr Tensor();
 
-        explicit constexpr Tensor(typename TensorInitializer<DType, shape_>::Array&&);
+        explicit Tensor(const typename TensorInitializer<DType, shape_>::Array&&);
 
-        /// Constructor from tensorInitializer used by toTensor function
-        /// and implicitly called from array initialization
-        explicit constexpr Tensor(TensorInitializer<DType, shape_>&&);
+        constexpr explicit Tensor(const typename TensorInitializer<DType, shape_>::Array&&)
+        requires(shape_.rank() <= 1);
+
+        constexpr explicit Tensor(const typename TensorInitializer<DType, shape_>::Array&);
 
         template <Util::ContainerCompatibleRange<DType> Range>
         constexpr explicit Tensor(from_range_t, Range&&);
@@ -59,6 +60,10 @@ namespace TensorII::Core {
         constexpr const_pointer data() const noexcept;
 
     private:
+        /// Constructor from tensorInitializer used by toTensor function
+        /// and implicitly called from array initialization
+        constexpr explicit Tensor(TensorInitializer<DType, shape_>&&);
+
         using Array = std::array<DType, size()>;
         Array data_;
     };

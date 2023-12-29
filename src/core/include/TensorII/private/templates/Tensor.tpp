@@ -15,36 +15,49 @@ namespace TensorII::Core {
         : data_ {}
     {}
 
-//    template<Scalar DType, auto shape_>
-//    requires (derived_from_shape<decltype(shape_)>)
-//    constexpr Tensor<DType, shape_>::Tensor(typename TensorInitializer<DType, shape_>::Array&& array)
-//        : data_ {}
-//    {
-//        // assert c-array same size as std::array
-//        static_assert(sizeof(Array) == sizeof(decltype(array)));
-//        if (!std::is_constant_evaluated()){
-//            if constexpr (std::is_bounded_array_v<typename std::remove_cvref_t<decltype(array)>>)
-//                memmove_s(data_.data(), size_in_bytes(), array, size_in_bytes());
-//            else
-//                data_[0] = array; // edge case for 0-tensor, where "array" is a value type
-//            return;
-//        }
-//        // The constant expression version is much slower
-//        auto initializer = TensorInitializer<DType, shape_>(array);
-//        std::ranges::copy_n(initializer.begin(), size(), data_.begin());
-//    }
-
     template<Scalar DType, auto shape_>
     requires (derived_from_shape<decltype(shape_)>)
-    constexpr Tensor<DType, shape_>::Tensor(typename TensorInitializer<DType, shape_>::Array&& array)
+    Tensor<DType, shape_>::Tensor(const typename TensorInitializer<DType, shape_>::Array&& array)
             : Tensor<DType, shape_>::Tensor(from_range, TensorInitializer<DType, shape_>(array))
     {}
 
     template<Scalar DType, auto shape_>
     requires (derived_from_shape<decltype(shape_)>)
+    constexpr Tensor<DType, shape_>::Tensor(const typename TensorInitializer<DType, shape_>::Array&& array)
+    requires(shape_.rank() <= 1)
+            : Tensor<DType, shape_>::Tensor(from_range, TensorInitializer<DType, shape_>(array))
+    {}
+
+    template<Scalar DType, auto shape_>
+    requires (derived_from_shape<decltype(shape_)>)
+    constexpr Tensor<DType, shape_>::Tensor(const typename TensorInitializer<DType, shape_>::Array& array)
+            : Tensor<DType, shape_>::Tensor(from_range, TensorInitializer<DType, shape_>(array))
+    {
+        if (std::is_constant_evaluated()){
+            constexpr bool lv_ref = std::is_lvalue_reference_v<decltype(array)>;
+            constexpr bool rv_md_array_ref =
+                    std::is_rvalue_reference_v<decltype(array)> &&
+                    shape_.rank() > 1;
+            static_assert(lv_ref || (!rv_md_array_ref), "Not supported");
+        }
+    }
+
+    template<Scalar DType, auto shape_>
+    requires (derived_from_shape<decltype(shape_)>)
     constexpr Tensor<DType, shape_>::Tensor(TensorInitializer<DType, shape_>&& initializer)
-        : Tensor<DType, shape_>::Tensor(from_range, initializer)
-    {} // Use mem-move maybe? I should investigate if its any faster
+    {
+        if (!std::is_constant_evaluated()){
+            memmove_s(data_.data(), size_in_bytes(), initializer.values, initializer.size() * sizeof(DType));
+            return;
+        } else {
+            constexpr bool lv_ref = std::is_lvalue_reference_v<decltype(initializer)>;
+            constexpr bool rv_md_array_ref =
+                    std::is_rvalue_reference_v<decltype(initializer)> &&
+                    shape_.rank() > 1;
+            static_assert(lv_ref || (!rv_md_array_ref), "Not supported");
+        }
+        std::ranges::copy_n(initializer.begin(), size(), data_.begin());
+    }
 
     template<Scalar DType, auto shape_>
     requires (derived_from_shape<decltype(shape_)>)
